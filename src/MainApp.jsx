@@ -81,6 +81,15 @@ const MainApp = () => {
     }
   };
 
+  const handleClearForm = () => {
+    setManufacturer('');
+    setProductName('');
+    setPriceExcludingTax('');
+    setVolume('');
+    setUnit('g'); // デフォルト値に戻す
+    setStoreName('');
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ p: 3 }}>
@@ -88,7 +97,7 @@ const MainApp = () => {
           <Typography variant="h5" component="h1">
             商品登録
           </Typography>
-          <Button variant="outlined" sx={{ color: '#616161', borderColor: '#bdbdbd' }} onClick={handleLogout}>
+          <Button variant="outlined" sx={{ color: '#616161', borderColor: '#bdbdbd', py: 1.5 }} onClick={handleLogout}>
             ログアウト
           </Button>
         </Box>
@@ -112,7 +121,7 @@ const MainApp = () => {
             onChange={(e) => setProductName(e.target.value)}
             margin="normal"
             InputLabelProps={{ style: { color: '#616161' }, shrink: true }}
-            InputProps={{ style: { color: '#424242' } }}
+            InputProps={{ style: { color: '#424242' } }} // 入力文字の色
           />
           <TextField
             fullWidth
@@ -123,7 +132,7 @@ const MainApp = () => {
             onChange={(e) => setPriceExcludingTax(e.target.value)}
             margin="normal"
             InputLabelProps={{ style: { color: '#616161' }, shrink: true }}
-            InputProps={{ style: { color: '#424242' } }}
+            InputProps={{ style: { color: '#424242' } }} // 入力文字の色
           />
         <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2, my: 2 }}>
           <TextField
@@ -134,7 +143,7 @@ const MainApp = () => {
             onChange={(e) => setVolume(e.target.value)}
             sx={{ flex: 1 }}
             InputLabelProps={{ style: { color: '#616161' }, shrink: true }}
-            InputProps={{ style: { color: '#424242' } }}
+            InputProps={{ style: { color: '#424242' } }} // 入力文字の色
           />
           <FormControl sx={{ width: '100px' }}>
             <InputLabel id="unit-label" style={{ color: '#616161' }}>単位</InputLabel>
@@ -161,10 +170,18 @@ const MainApp = () => {
           onChange={(e) => setStoreName(e.target.value)}
           margin="dense"
           InputLabelProps={{ style: { color: '#616161' }, shrink: true }}
-          InputProps={{ style: { color: '#424242' } }}
+          InputProps={{ style: { color: '#424242' } }} // 入力文字の色
         />
-          <Button type="submit" variant="contained" sx={{ mt: 2, backgroundColor: '#757575', '&:hover': { backgroundColor: '#616161' } }}>
+          <Button type="submit" variant="contained" sx={{ mt: 2, py: 1.5, width: '48%', backgroundColor: '#757575', '&:hover': { backgroundColor: '#616161' } }}>
             商品を登録
+          </Button>
+          <Button
+            type="button"
+            variant="outlined"
+            sx={{ mt: 2, py: 1.5, width: '48%', ml: '4%', color: '#757575', borderColor: '#bdbdbd' }}
+            onClick={handleClearForm}
+          >
+            クリア
           </Button>
         </Box>
 
