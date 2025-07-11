@@ -185,7 +185,7 @@ const MainApp = () => {
         </Box>
 
         <Typography variant="h5" gutterBottom>
-          最近登録された商品
+          登録された商品一覧
         </Typography>
         <List>
           {products.length === 0 ? (
@@ -195,8 +195,16 @@ const MainApp = () => {
               <Paper key={product.id} sx={{ mb: 1, p: 1 }}>
                 <ListItem disablePadding>
                   <ListItemText
-                    primary={`${product.productName} (${product.manufacturer})`}
-                    secondary={`税抜価格: ${product.priceExcludingTax}円 / 内容量: ${product.volume}${product.unit} / 店舗: ${product.storeName}`}
+                                        primary={
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '10%' }}>{`${product.manufacturer}`}</Typography>
+                        <Typography component="span" variant="body1" sx={{ width: '25%' }}>{`${product.productName}`}</Typography>
+                        <Typography component="span" variant="body1" sx={{ width: '15%' }}>{`${product.priceExcludingTax}円`}</Typography>
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '15%' }}>{`${product.volume}${product.unit}`}</Typography>
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '15%' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography>
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '20%' }}>{`${product.storeName}`}</Typography>
+                      </Box>
+                    }
                   />
                 </ListItem>
               </Paper>
