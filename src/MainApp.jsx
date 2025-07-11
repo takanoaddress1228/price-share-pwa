@@ -16,7 +16,6 @@ import {
   FormControl, // FormControlを追加
   InputLabel, // InputLabelを追加
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
 
 const MainApp = () => {
   const [manufacturer, setManufacturer] = useState('');
@@ -106,7 +105,7 @@ const MainApp = () => {
           <TextField
             fullWidth
             label="メーカー"
-            placeholder="キューピー"
+            placeholder="エバラ食品"
             value={manufacturer}
             onChange={(e) => setManufacturer(e.target.value)}
             margin="normal"
@@ -116,7 +115,7 @@ const MainApp = () => {
           <TextField
             fullWidth
             label="商品名"
-            placeholder="キューピーマヨネーズ"
+            placeholder="黄金の味 中辛"
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
             margin="normal"
@@ -137,7 +136,7 @@ const MainApp = () => {
         <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2, my: 2 }}>
           <TextField
             label="内容量"
-            placeholder="450"
+            placeholder="210"
             type="number"
             value={volume}
             onChange={(e) => setVolume(e.target.value)}
@@ -164,7 +163,7 @@ const MainApp = () => {
         </Box>
         <TextField
           fullWidth
-          label="店舗名"
+          label="店名と店舗名"
           placeholder="イオン東雲店"
           value={storeName}
           onChange={(e) => setStoreName(e.target.value)}
