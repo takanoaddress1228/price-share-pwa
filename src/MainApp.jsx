@@ -14,7 +14,8 @@ import {
   Select, // Selectを追加
   MenuItem, // MenuItemを追加
   FormControl, // FormControlを追加
-  InputLabel, // InputLabelを追加
+  InputLabel,
+  Rating, // Ratingを追加
 } from '@mui/material';
 
 const MainApp = () => {
@@ -65,6 +66,7 @@ const MainApp = () => {
         volume: Number(volume), // 数値として保存
         unit: unit,
         storeName: storeName,
+        rating: 0, // 初期値として0を設定（未評価）
         createdAt: serverTimestamp(), // 登録日時
       });
       // フォームをクリア
@@ -197,12 +199,14 @@ const MainApp = () => {
                   <ListItemText
                                         primary={
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Rating name="product-rating" value={product.rating} max={3} size="small" sx={{ mr: 1 }} />
                         <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '10%' }}>{`${product.manufacturer}`}</Typography>
                         <Typography component="span" variant="body1" sx={{ width: '25%' }}>{`${product.productName}`}</Typography>
                         <Typography component="span" variant="body1" sx={{ width: '15%' }}>{`${product.priceExcludingTax}円`}</Typography>
                         <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '15%' }}>{`${product.volume}${product.unit}`}</Typography>
                         <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '15%' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography>
-                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '20%' }}>{`${product.storeName}`}</Typography>
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '15%' }}>{`${product.storeName}`}</Typography>
+                        <Button variant="outlined" size="small" sx={{ ml: 1, width: '10%' }}>他店舗</Button>
                       </Box>
                     }
                   />
