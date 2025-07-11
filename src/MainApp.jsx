@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from './firebase';
 import { signOut } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, setDoc } from 'firebase/firestore';
 import {
   Box,
   Button,
@@ -199,7 +199,21 @@ const MainApp = () => {
                   <ListItemText
                                         primary={
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Rating name="product-rating" value={product.rating} max={3} size="small" sx={{ mr: 1 }} />
+                        <Rating
+                          name={`rating-${product.id}`}
+                          value={product.rating || 0} // ユーザーの評価、なければ0
+                          max={3}
+                          size="small"
+                          sx={{ mr: 1 }}
+                          onChange={async (event, newValue) => {
+                            if (auth.currentUser) {
+                              const ratingRef = collection(db, `products/${product.id}/ratings`);
+                              await setDoc(doc(ratingRef, auth.currentUser.uid), { rating: newValue });
+                            } else {
+                              alert('ログインして評価してください。');
+                            }
+                          }}
+                        />
                         <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '10%' }}>{`${product.manufacturer}`}</Typography>
                         <Typography component="span" variant="body1" sx={{ width: '25%' }}>{`${product.productName}`}</Typography>
                         <Typography component="span" variant="body1" sx={{ width: '15%' }}>{`${product.priceExcludingTax}円`}</Typography>
