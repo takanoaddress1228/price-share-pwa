@@ -19,8 +19,9 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 // 各画面コンポーネント
 import ProductRegistrationPage from './ProductRegistrationPage';
 import ProductListPage from './ProductListPage';
-const CheapestPriceSearchPage = () => <Typography variant="h4">最安値検索画面</Typography>;
-const PlaceholderPage = () => <Typography variant="h4">お気に入り画面</Typography>;
+import FavoriteProductsPage from './FavoriteProductsPage'; // 追加
+// const CheapestPriceSearchPage = () => <Typography variant="h4">最安値検索画面</Typography>; // 削除
+// const PlaceholderPage = () => <Typography variant="h4">お気に入り画面</Typography>; // 削除
 
 
 const Dashboard = () => {
@@ -45,31 +46,12 @@ const Dashboard = () => {
     }
   }, [location.pathname]);
 
-  // handleLogout 関数を削除
-  // const handleLogout = async () => {
-  //   try {
-  //     await signOut(auth);
-  //   } catch (error) {
-  //     console.error("ログアウトエラー:", error);
-  //   }
-  // };
-
   return (
     <Box sx={{ pb: 7 }}>
-      {/* AppBar を削除 */}
-      {/* <AppBar position="static" sx={{ backgroundColor: 'white' }}>
-        <Toolbar>
-          <Box sx={{ flexGrow: 1 }} />
-          <Button color="inherit" onClick={handleLogout}>
-            ログアウト
-          </Button>
-        </Toolbar>
-      </AppBar> */}
-
       <Routes>
         <Route path="/register" element={<ProductRegistrationPage />} />
         <Route path="/search" element={<ProductListPage />} />
-        <Route path="/other" element={<PlaceholderPage />} />
+        <Route path="/other" element={<FavoriteProductsPage />} /> {/* PlaceholderPageをFavoriteProductsPageに変更 */}
         <Route path="/" element={<ProductRegistrationPage />} />
       </Routes>
 
