@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/price-share-pwa/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Price Share PWA</title>
+    <script type="module" crossorigin src="/price-share-pwa/assets/index-Cyzl8mEs.js"></script>
+    <link rel="stylesheet" crossorigin href="/price-share-pwa/assets/index-Dtn62Xmo.css">
+    <script>
+      // SPAルーティングのためのリダイレクト
+      // GitHub Pagesは404.htmlをカスタムエラーページとして使用するため、
+      // ここでJavaScriptを使ってindex.htmlにリダイレクトし、
+      // React Routerがパスを処理できるようにする。
+      (function () {
+        var redirect = sessionStorage.getItem('redirect');
+        if (redirect) {
+          sessionStorage.removeItem('redirect');
+          location.replace(redirect);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // 404エラー時にindex.htmlにリダイレクトするための処理
+      // GitHub Pagesのカスタム404ページとして機能させる
+      if (location.pathname !== '/price-share-pwa/') { // リポジトリのルートパス以外の場合
+        sessionStorage.setItem('redirect', location.href);
+        location.replace('/price-share-pwa/');
+      }
+    </script>
+  </body>
+</html>
