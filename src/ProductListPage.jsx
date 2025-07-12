@@ -203,8 +203,8 @@ const ProductListPage = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'nowrap' }}> {/* flexWrap: 'nowrap' を追加 */}
-        <Typography variant="h6" sx={{ whiteSpace: 'nowrap', fontSize: '1rem', flexShrink: 0 }}> {/* variantをh6に、whiteSpaceとfontSizeを追加 */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'nowrap' }}>
+        <Typography variant="h6" sx={{ whiteSpace: 'nowrap', fontSize: '1rem', flexShrink: 0 }}>
           {showHiddenProductsView ? '非表示商品一覧' : '登録された商品一覧'}
         </Typography>
         <TextField
@@ -214,14 +214,14 @@ const ProductListPage = () => {
           value={searchKeyword}
           onChange={(e) => setSearchKeyword(e.target.value)}
           placeholder="商品名、または星評価 (0-3)"
-          sx={{ width: '45%', ml: 1 }} // mlを追加して間隔を調整
+          sx={{ width: '45%', ml: 1 }}
         />
         {showHiddenProductsView ? (
-          <Button variant="outlined" sx={{ ml: 1, py: 0.5, color: '#757575', borderColor: '#bdbdbd', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={handleBackToMainView}> {/* pyを0.5に、whiteSpaceとflexShrinkを追加 */}
+          <Button variant="outlined" sx={{ ml: 1, py: 0.5, color: '#757575', borderColor: '#bdbdbd', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={handleBackToMainView}>
             戻る
           </Button>
         ) : (
-          <Button variant="outlined" sx={{ ml: 1, py: 0.5, color: '#757575', borderColor: '#bdbdbd', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={handleShowHiddenProducts}> {/* pyを0.5に、whiteSpaceとflexShrinkを追加 */}
+          <Button variant="outlined" sx={{ ml: 1, py: 0.5, color: '#757575', borderColor: '#bdbdbd', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={handleShowHiddenProducts}>
             非表示をみる
           </Button>
         )}
@@ -255,7 +255,7 @@ const ProductListPage = () => {
                         value={userRatingsByProductName[product.productName] || 0}
                         max={3}
                         size="small"
-                        sx={{ mr: 1, flexShrink: 0 }}
+                        sx={{ mr: 1, flexShrink: 0, color: 'gold' }} // ここを変更
                         onChange={async (event, newValue) => {
                           if (auth.currentUser) {
                             const confirmSave = confirm('この評価を保存しますか？同じ商品名の他の商品にも適用されます。');
