@@ -59,22 +59,23 @@ const Dashboard = () => {
           value={value}
           onChange={(event, newValue) => {
             setValue(newValue);
-            if (newValue === 0) navigate('/search');
-            if (newValue === 1) navigate('/register');
-            if (newValue === 2) navigate('/other');
+            // 順序を交換
+            if (newValue === 0) navigate('/other'); // お気に入り
+            if (newValue === 1) navigate('/register'); // 商品登録
+            if (newValue === 2) navigate('/search'); // 最安値検索
           }}
         >
           <BottomNavigationAction
-            label="最安値検索"
-            icon={<SearchIcon sx={{ color: value === 0 ? 'primary.main' : 'text.secondary' }} />} // 色を調整
+            label="お気に入り" // 変更
+            icon={<StarOutlineIcon sx={{ color: value === 0 ? 'primary.main' : 'text.secondary' }} />} // 変更
           />
           <BottomNavigationAction
             label="商品登録"
-            icon={<AddCircleOutlineIcon sx={{ color: value === 1 ? 'primary.main' : 'text.secondary' }} />} // 色を調整
+            icon={<AddCircleOutlineIcon sx={{ color: value === 1 ? 'primary.main' : 'text.secondary' }} />} 
           />
           <BottomNavigationAction
-            label="お気に入り"
-            icon={<StarOutlineIcon sx={{ color: value === 2 ? 'primary.main' : 'text.secondary' }} />} // 色を調整
+            label="最安値検索" // 変更
+            icon={<SearchIcon sx={{ color: value === 2 ? 'primary.main' : 'text.secondary' }} />} // 変更
           />
         </BottomNavigation>
       </Paper>
