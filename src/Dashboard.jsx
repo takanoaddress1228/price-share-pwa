@@ -9,18 +9,18 @@ import {
   Toolbar,
   BottomNavigation,
   BottomNavigationAction,
-  Paper, // 追加
+  Paper,
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SearchIcon from '@mui/icons-material/Search';
-import StarIcon from '@mui/icons-material/Star';
+import StarIcon from '@mui/icons-material/Star'; // そのまま使用
 import { Routes, Route, useNavigate } from 'react-router-dom';
 
 // 各画面コンポーネント
 import ProductRegistrationPage from './ProductRegistrationPage';
 import ProductListPage from './ProductListPage';
 const CheapestPriceSearchPage = () => <Typography variant="h4">最安値検索画面</Typography>;
-const PlaceholderPage = () => <Typography variant="h4">☆☆☆画面</Typography>;
+const PlaceholderPage = () => <Typography variant="h4">お気に入り画面</Typography>; // 変更
 
 
 const Dashboard = () => {
@@ -36,7 +36,7 @@ const Dashboard = () => {
   };
 
   return (
-    <Box sx={{ pb: 7 }}> {/* BottomNavigationの高さ分パディングを追加 */}
+    <Box sx={{ pb: 7 }}>
       <AppBar position="static" sx={{ backgroundColor: '#616161' }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
@@ -52,7 +52,6 @@ const Dashboard = () => {
         <Route path="/register" element={<ProductRegistrationPage />} />
         <Route path="/search" element={<ProductListPage />} />
         <Route path="/other" element={<PlaceholderPage />} />
-        {/* デフォルトルートは商品登録ページに設定 */}
         <Route path="/" element={<ProductRegistrationPage />} />
       </Routes>
 
@@ -69,7 +68,7 @@ const Dashboard = () => {
         >
           <BottomNavigationAction label="最安値検索" icon={<SearchIcon />} />
           <BottomNavigationAction label="商品登録" icon={<AddCircleOutlineIcon />} />
-          <BottomNavigationAction label="☆☆☆" icon={<StarIcon />} />
+          <BottomNavigationAction label="お気に入り" icon={<StarIcon />} /> {/* 変更 */}
         </BottomNavigation>
       </Paper>
     </Box>
