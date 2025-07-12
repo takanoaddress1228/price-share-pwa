@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { auth, db } from './firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { signOut } from 'firebase/auth'; // 追加
 import {
   Box,
   Button,
@@ -20,6 +21,14 @@ const ProductRegistrationPage = () => {
   const [unit, setUnit] = useState('g');
   const [storeName, setStoreName] = useState('');
   const [tags, setTags] = useState('');
+
+  const handleLogout = async () => { // 追加
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("ログアウトエラー:", error);
+    }
+  };
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
@@ -67,9 +76,14 @@ const ProductRegistrationPage = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        商品登録
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}> {/* 追加 */}
+        <Typography variant="h5" component="h1"> {/* mb: 2 を削除 */}
+          商品登録
+        </Typography>
+        <Button variant="outlined" sx={{ color: '#616161', borderColor: '#bdbdbd', py: 1.5 }} onClick={handleLogout}> {/* 追加 */}
+          ログアウト
+        </Button>
+      </Box>
       <Box component="form" onSubmit={handleAddProduct} sx={{ mb: 6 }}>
         <TextField
           fullWidth

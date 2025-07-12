@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { auth } from './firebase';
-import { signOut } from 'firebase/auth';
+// import { signOut } from 'firebase/auth'; // 削除
 import {
   Box,
   Button,
   Typography,
-  AppBar,
-  Toolbar,
+  // AppBar, // 削除
+  // Toolbar, // 削除
   BottomNavigation,
   BottomNavigationAction,
   Paper,
@@ -45,24 +45,26 @@ const Dashboard = () => {
     }
   }, [location.pathname]);
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("ログアウトエラー:", error);
-    }
-  };
+  // handleLogout 関数を削除
+  // const handleLogout = async () => {
+  //   try {
+  //     await signOut(auth);
+  //   } catch (error) {
+  //     console.error("ログアウトエラー:", error);
+  //   }
+  // };
 
   return (
     <Box sx={{ pb: 7 }}>
-      <AppBar position="static" sx={{ backgroundColor: 'white' }}> {/* ここを変更 */}
+      {/* AppBar を削除 */}
+      {/* <AppBar position="static" sx={{ backgroundColor: 'white' }}>
         <Toolbar>
           <Box sx={{ flexGrow: 1 }} />
           <Button color="inherit" onClick={handleLogout}>
             ログアウト
           </Button>
         </Toolbar>
-      </AppBar>
+      </AppBar> */}
 
       <Routes>
         <Route path="/register" element={<ProductRegistrationPage />} />
