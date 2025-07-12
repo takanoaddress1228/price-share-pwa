@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SearchIcon from '@mui/icons-material/Search';
-import StarOutlineIcon from '@mui/icons-material/StarOutline'; // 変更
+import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 
 // 各画面コンポーネント
@@ -64,9 +64,18 @@ const Dashboard = () => {
             if (newValue === 2) navigate('/other');
           }}
         >
-          <BottomNavigationAction label="最安値検索" icon={<SearchIcon />} />
-          <BottomNavigationAction label="商品登録" icon={<AddCircleOutlineIcon />} />
-          <BottomNavigationAction label="お気に入り" icon={<StarOutlineIcon />} /> {/* 変更 */}
+          <BottomNavigationAction
+            label="最安値検索"
+            icon={<SearchIcon sx={{ color: value === 0 ? 'primary.main' : 'text.secondary' }} />} // 色を調整
+          />
+          <BottomNavigationAction
+            label="商品登録"
+            icon={<AddCircleOutlineIcon sx={{ color: value === 1 ? 'primary.main' : 'text.secondary' }} />} // 色を調整
+          />
+          <BottomNavigationAction
+            label="お気に入り"
+            icon={<StarOutlineIcon sx={{ color: value === 2 ? 'primary.main' : 'text.secondary' }} />} // 色を調整
+          />
         </BottomNavigation>
       </Paper>
     </Box>
