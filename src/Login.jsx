@@ -41,7 +41,7 @@ const Login = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        width: '100vw', // 画面全体の幅を使用
+        width: '100%', // 画面全体の幅を使用
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
