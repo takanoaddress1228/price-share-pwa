@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // useEffect を追加
 import { auth } from './firebase';
 import { signOut } from 'firebase/auth';
 import {
@@ -14,7 +14,7 @@ import {
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SearchIcon from '@mui/icons-material/Search';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'; // useLocation を追加
 
 // 各画面コンポーネント
 import ProductRegistrationPage from './ProductRegistrationPage';
@@ -25,7 +25,26 @@ const PlaceholderPage = () => <Typography variant="h4">お気に入り画面</Ty
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // 追加
   const [value, setValue] = useState(0);
+
+  // パスに基づいてBottomNavigationの選択状態を更新
+  useEffect(() => {
+    switch (location.pathname) {
+      case '/price-share-pwa/other': // GitHub Pagesのbasenameを考慮
+        setValue(0);
+        break;
+      case '/price-share-pwa/register': // GitHub Pagesのbasenameを考慮
+      case '/price-share-pwa/': // デフォルトルートも商品登録
+        setValue(1);
+        break;
+      case '/price-share-pwa/search': // GitHub Pagesのbasenameを考慮
+        setValue(2);
+        break;
+      default:
+        setValue(1); // 未定義のパスの場合、商品登録をデフォルトにする
+    }
+  }, [location.pathname]); // location.pathnameが変更されたときに実行
 
   const handleLogout = async () => {
     try {
@@ -59,23 +78,22 @@ const Dashboard = () => {
           value={value}
           onChange={(event, newValue) => {
             setValue(newValue);
-            // 順序を交換
             if (newValue === 0) navigate('/other'); // お気に入り
             if (newValue === 1) navigate('/register'); // 商品登録
             if (newValue === 2) navigate('/search'); // 最安値検索
           }}
         >
           <BottomNavigationAction
-            label="お気に入り" // 変更
-            icon={<StarOutlineIcon sx={{ color: value === 0 ? 'primary.main' : 'text.secondary' }} />} // 変更
+            label="お気に入り"
+            icon={<StarOutlineIcon sx={{ color: value === 0 ? 'primary.main' : 'text.secondary' }} />} 
           />
           <BottomNavigationAction
             label="商品登録"
             icon={<AddCircleOutlineIcon sx={{ color: value === 1 ? 'primary.main' : 'text.secondary' }} />} 
           />
           <BottomNavigationAction
-            label="最安値検索" // 変更
-            icon={<SearchIcon sx={{ color: value === 2 ? 'primary.main' : 'text.secondary' }} />} // 変更
+            label="最安値検索"
+            icon={<SearchIcon sx={{ color: value === 2 ? 'primary.main' : 'text.secondary' }} />} 
           />
         </BottomNavigation>
       </Paper>
