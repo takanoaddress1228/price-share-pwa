@@ -3,9 +3,10 @@ import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-// メインアプリのコンポーネント
-import MainApp from './MainApp'; 
+// メインアプリのコンポーネント (Dashboardにリネーム予定)
+import Dashboard from './Dashboard';
 // ログイン画面のコンポーネント
 import Login from './Login';
 
@@ -14,19 +15,16 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Firebaseのログイン状態を監視するリスナー
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
 
-    // コンポーネントが不要になった時にリスナーを解除
     return () => {
       unsubscribe();
     };
   }, []);
 
-  // ローディング中なら、くるくる回るアイコンを表示
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -35,8 +33,14 @@ function App() {
     );
   }
 
-  // userがいればメイン画面、いなければログイン画面を表示
-  return user ? <MainApp /> : <Login />;
+  return (
+    <BrowserRouter basename="/price-share-pwa"> {/* ここにbasenameを追加 */}
+      <Routes>
+        <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+        <Route path="/*" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
