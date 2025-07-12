@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // useEffect を追加
+import React, { useState, useEffect } from 'react';
 import { auth } from './firebase';
 import { signOut } from 'firebase/auth';
 import {
@@ -14,7 +14,7 @@ import {
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SearchIcon from '@mui/icons-material/Search';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'; // useLocation を追加
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 
 // 各画面コンポーネント
 import ProductRegistrationPage from './ProductRegistrationPage';
@@ -25,26 +25,25 @@ const PlaceholderPage = () => <Typography variant="h4">お気に入り画面</Ty
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // 追加
+  const location = useLocation();
   const [value, setValue] = useState(0);
 
-  // パスに基づいてBottomNavigationの選択状態を更新
   useEffect(() => {
     switch (location.pathname) {
-      case '/price-share-pwa/other': // GitHub Pagesのbasenameを考慮
+      case '/price-share-pwa/other':
         setValue(0);
         break;
-      case '/price-share-pwa/register': // GitHub Pagesのbasenameを考慮
-      case '/price-share-pwa/': // デフォルトルートも商品登録
+      case '/price-share-pwa/register':
+      case '/price-share-pwa/':
         setValue(1);
         break;
-      case '/price-share-pwa/search': // GitHub Pagesのbasenameを考慮
+      case '/price-share-pwa/search':
         setValue(2);
         break;
       default:
-        setValue(1); // 未定義のパスの場合、商品登録をデフォルトにする
+        setValue(1);
     }
-  }, [location.pathname]); // location.pathnameが変更されたときに実行
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     try {
@@ -56,7 +55,7 @@ const Dashboard = () => {
 
   return (
     <Box sx={{ pb: 7 }}>
-      <AppBar position="static" sx={{ backgroundColor: '#616161' }}>
+      <AppBar position="static" sx={{ backgroundColor: 'white' }}> {/* ここを変更 */}
         <Toolbar>
           <Box sx={{ flexGrow: 1 }} />
           <Button color="inherit" onClick={handleLogout}>
@@ -78,9 +77,9 @@ const Dashboard = () => {
           value={value}
           onChange={(event, newValue) => {
             setValue(newValue);
-            if (newValue === 0) navigate('/other'); // お気に入り
-            if (newValue === 1) navigate('/register'); // 商品登録
-            if (newValue === 2) navigate('/search'); // 最安値検索
+            if (newValue === 0) navigate('/other');
+            if (newValue === 1) navigate('/register');
+            if (newValue === 2) navigate('/search');
           }}
         >
           <BottomNavigationAction
