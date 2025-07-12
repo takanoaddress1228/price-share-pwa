@@ -196,7 +196,7 @@ const FavoriteProductsPage = () => {
                         value={userRatingsByProductName[product.productName] || 0}
                         max={3}
                         size="small"
-                        sx={{ mr: 1, flexShrink: 0, color: 'gold' }}
+                        sx={{ mr: 1, flexShrink: 0 }}
                         onChange={async (event, newValue) => {
                           if (auth.currentUser) {
                             const confirmSave = confirm('この評価を保存しますか？同じ商品名の他の商品にも適用されます。');
