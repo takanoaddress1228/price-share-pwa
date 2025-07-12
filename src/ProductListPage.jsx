@@ -25,6 +25,9 @@ const ProductListPage = () => {
   const [showHiddenProductsView, setShowHiddenProductsView] = useState(false);
   const [openRelatedProductsDialog, setOpenRelatedProductsDialog] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [openRatingDialog, setOpenRatingDialog] = useState(false);
+  const [currentProductForRating, setCurrentProductForRating] = useState(null);
+  const [dialogRatingValue, setDialogRatingValue] = useState(0);
 
   // ひらがなをカタカナに変換する関数
   const toHalfWidthKatakana = (str) => {
@@ -227,18 +230,7 @@ const ProductListPage = () => {
         )}
       </Box>
 
-      {/* 星の意味表示を追加 */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexWrap: 'wrap', fontSize: '0.8rem' }}>
-        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-          <StarIcon sx={{ color: 'gold', fontSize: '1rem' }} />イマイチ
-        </Typography>
-        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-          <StarIcon sx={{ color: 'gold', fontSize: '1rem' }} /><StarIcon sx={{ color: 'gold', fontSize: '1rem' }} />ふつう
-        </Typography>
-        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
-          <StarIcon sx={{ color: 'gold', fontSize: '1rem' }} /><StarIcon sx={{ color: 'gold', fontSize: '1rem' }} /><StarIcon sx={{ color: 'gold', fontSize: '1rem' }} />リピート
-        </Typography>
-      </Box>
+      
 
       <List>
         {filteredProducts.length === 0 ? (
@@ -250,45 +242,36 @@ const ProductListPage = () => {
                 <ListItemText
                   primary={
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'nowrap', gap: 0 }}>
-                      <Rating
-                        name={`rating-${product.id}`}
-                        value={userRatingsByProductName[product.productName] || 0}
-                        max={3}
-                        size="small"
-                        sx={{ mr: 1, flexShrink: 0 }} // ここを変更
-                        onChange={async (event, newValue) => {
-                          if (auth.currentUser) {
-                            const confirmSave = confirm('この評価を保存しますか？同じ商品名の他の商品にも適用されます。');
-                            if (confirmSave) {
-                              try {
-                                const ratingRef = collection(db, `users/${auth.currentUser.uid}/productNameRatings`);
-                                await setDoc(doc(ratingRef, product.productName), { rating: newValue });
-                              } catch (error) {
-                                console.error("評価の保存エラー:", error);
-                                alert("評価の保存中にエラーが発生しました。");
-                              }
-                            } else {
-                              console.log('評価の保存がキャンセルされました。');
-                            }
-                          } else {
-                            alert('ログインして評価してください。');
-                          }
+                      <Box
+                        onClick={() => {
+                          setCurrentProductForRating(product);
+                          setDialogRatingValue(userRatingsByProductName[product.productName] || 0);
+                          setOpenRatingDialog(true);
                         }}
-                      />
+                        sx={{ cursor: 'pointer', mr: 1, flexShrink: 0 }}
+                      >
+                        <Rating
+                          name={`rating-${product.id}`}
+                          value={userRatingsByProductName[product.productName] || 0}
+                          max={3}
+                          size="small"
+                          readOnly
+                        />
+                      </Box>
                       <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '8%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.manufacturer}`}</Typography>
                       <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.productName}`}</Typography>
                       <Typography component="span" variant="body1" sx={{ width: '8%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.priceExcludingTax}円`}</Typography>
                       <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '7%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
                       <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '7%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography>
                       <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '12%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.storeName}`}</Typography>
-                      <Button variant="outlined" size="small" sx={{ ml: 1, width: 'auto', flexShrink: 0 }} onClick={() => handleShowRelatedProducts(product.productName, product.volume)}>他店舗</Button>
+                      <Button variant="outlined" size="small" sx={{ width: 36, height: 36, minWidth: 36, flexShrink: 0 }} onClick={() => handleShowRelatedProducts(product.productName, product.volume)}>他</Button>
                       <Button
                         variant="outlined"
                         size="small"
-                        sx={{ ml: 1, width: 'auto', flexShrink: 0 }}
+                        sx={{ width: 36, height: 36, minWidth: 36, flexShrink: 0 }}
                         onClick={() => handleToggleHiddenStatus(product.id, hiddenProductIds.includes(product.id))}
                       >
-                        {hiddenProductIds.includes(product.id) ? '元に戻す' : '非表示'}
+                        {hiddenProductIds.includes(product.id) ? '元に戻す' : '非'}
                       </Button>
                     </Box>
                   }
@@ -322,6 +305,26 @@ const ProductListPage = () => {
               ))
             )}
           </List>
+        </DialogContent>
+      </Dialog>
+
+      {/* 評価ダイアログ */}
+      <Dialog open={openRatingDialog} onClose={() => setOpenRatingDialog(false)}>
+        <DialogTitle>
+          <DialogTitle>
+          <Typography sx={{ color: 'orange' }}>★イマイチ ★★ ふつう ★★★ リピート</Typography>
+        </DialogTitle>
+        </DialogTitle>
+        <DialogContent>
+          {currentProductForRating && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                {currentProductForRating.productName}
+              </Typography>
+              <Rating                name="dialog-rating"                value={dialogRatingValue}                max={3}                size="large"                onChange={(event, newValue) => {                  setDialogRatingValue(newValue);                }}                sx={{ color: 'orange' }}              />
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 3 }}>                <Button                  variant="contained"                  onClick={async () => {                    if (auth.currentUser) {                      try {                        const ratingRef = collection(db, `users/${auth.currentUser.uid}/productNameRatings`);                        await setDoc(doc(ratingRef, currentProductForRating.productName), { rating: dialogRatingValue });                        setOpenRatingDialog(false);                      } catch (error) {                        console.error("評価の保存エラー:", error);                        alert("評価の保存中にエラーが発生しました。");                      }                    } else {                      alert("ログインして評価してください。");                    }                  }}                >                  保存                </Button>                <Button                  variant="outlined"                  onClick={async () => {                    if (auth.currentUser) {                      try {                        const ratingRef = collection(db, `users/${auth.currentUser.uid}/productNameRatings`);                        await setDoc(doc(ratingRef, currentProductForRating.productName), { rating: 0 });                        setOpenRatingDialog(false);                      } catch (error) {                        console.error("評価の保存エラー:", error);                        alert("評価の保存中にエラーが発生しました。");                      }                    } else {                      alert("ログインして評価してください。");                    }                  }}                  sx={{ ml: 1 }}                >                  クリア                </Button>              </Box>
+            </Box>
+          )}
         </DialogContent>
       </Dialog>
     </Box>
