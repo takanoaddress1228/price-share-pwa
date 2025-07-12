@@ -1,5 +1,5 @@
-import React, { useState } from 'react'; // useEffect, db, collection, query, orderBy, onSnapshot, doc, setDoc, getDoc, deleteDoc を削除
-import { auth } from './firebase'; // db を削除
+import React, { useState } from 'react';
+import { auth } from './firebase';
 import { signOut } from 'firebase/auth';
 import {
   Box,
@@ -9,6 +9,7 @@ import {
   Toolbar,
   BottomNavigation,
   BottomNavigationAction,
+  Paper, // 追加
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SearchIcon from '@mui/icons-material/Search';
@@ -17,7 +18,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom';
 
 // 各画面コンポーネント
 import ProductRegistrationPage from './ProductRegistrationPage';
-import ProductListPage from './ProductListPage'; // 追加
+import ProductListPage from './ProductListPage';
 const CheapestPriceSearchPage = () => <Typography variant="h4">最安値検索画面</Typography>;
 const PlaceholderPage = () => <Typography variant="h4">☆☆☆画面</Typography>;
 
@@ -49,7 +50,7 @@ const Dashboard = () => {
 
       <Routes>
         <Route path="/register" element={<ProductRegistrationPage />} />
-        <Route path="/search" element={<ProductListPage />} /> {/* ProductListPageをレンダリング */}
+        <Route path="/search" element={<ProductListPage />} />
         <Route path="/other" element={<PlaceholderPage />} />
         {/* デフォルトルートは商品登録ページに設定 */}
         <Route path="/" element={<ProductRegistrationPage />} />
