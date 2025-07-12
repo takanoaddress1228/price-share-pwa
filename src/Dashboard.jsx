@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SearchIcon from '@mui/icons-material/Search';
-import StarIcon from '@mui/icons-material/Star';
+import StarOutlineIcon from '@mui/icons-material/StarOutline'; // 変更
 import { Routes, Route, useNavigate } from 'react-router-dom';
 
 // 各画面コンポーネント
@@ -39,10 +39,7 @@ const Dashboard = () => {
     <Box sx={{ pb: 7 }}>
       <AppBar position="static" sx={{ backgroundColor: '#616161' }}>
         <Toolbar>
-          {/* <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Price Share PWA
-          </Typography> */} {/* この行を削除 */}
-          <Box sx={{ flexGrow: 1 }} /> {/* スペースを確保するために追加 */}
+          <Box sx={{ flexGrow: 1 }} />
           <Button color="inherit" onClick={handleLogout}>
             ログアウト
           </Button>
@@ -69,7 +66,7 @@ const Dashboard = () => {
         >
           <BottomNavigationAction label="最安値検索" icon={<SearchIcon />} />
           <BottomNavigationAction label="商品登録" icon={<AddCircleOutlineIcon />} />
-          <BottomNavigationAction label="お気に入り" icon={<StarIcon />} />
+          <BottomNavigationAction label="お気に入り" icon={<StarOutlineIcon />} /> {/* 変更 */}
         </BottomNavigation>
       </Paper>
     </Box>
