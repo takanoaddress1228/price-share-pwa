@@ -102,12 +102,25 @@ const FavoriteProductsPage = () => {
     // お気に入り商品は星評価が1つ以上あるもの
     let baseProducts = products.filter(product => (userRatingsByProductName[product.productName] || 0) > 0);
 
+    // 同じ商品名の中で単価が最も安いものだけを抽出
+    const cheapestPerProductNameMap = new Map();
+    baseProducts.forEach(product => {
+      const unitPrice = product.volume > 0 ? (product.priceExcludingTax / product.volume) : Infinity;
+      const productWithUnitPrice = { ...product, unitPrice };
+
+      const existingCheapest = cheapestPerProductNameMap.get(product.productName);
+      if (!existingCheapest || unitPrice < existingCheapest.unitPrice) {
+        cheapestPerProductNameMap.set(product.productName, productWithUnitPrice);
+      }
+    });
+    let productsToShow = Array.from(cheapestPerProductNameMap.values());
+
     // 検索キーワードと星評価によるフィルタリング
     const keyword = searchKeyword.toLowerCase();
     const searchRating = parseInt(keyword, 10); // キーワードを数値に変換
     const isRatingSearch = !isNaN(searchRating) && searchRating >= 0 && searchRating <= 3; // 0から3の数値で、かつ数値であるか
 
-    let tempFilteredProducts = baseProducts.filter(product => {
+    let tempFilteredProducts = productsToShow.filter(product => {
       const productNameLower = product.productName.toLowerCase();
       const manufacturerLower = product.manufacturer.toLowerCase();
       const tagsLower = (product.tags || []).map(tag => tag.toLowerCase());
@@ -134,25 +147,8 @@ const FavoriteProductsPage = () => {
       );
     });
 
-    // 検索キーワードが入力されている場合（星評価検索を除く）に、
-    // 同じ商品名の中で単価が最も安いものだけを表示する
-    if (searchKeyword.trim() !== '' && !isRatingSearch) {
-      const cheapestPerProductNameMap = new Map();
-      tempFilteredProducts.forEach(product => {
-        const unitPrice = product.volume > 0 ? (product.priceExcludingTax / product.volume) : Infinity;
-        const productWithUnitPrice = { ...product, unitPrice };
-
-        const existingCheapest = cheapestPerProductNameMap.get(product.productName);
-        if (!existingCheapest || unitPrice < existingCheapest.unitPrice) {
-          cheapestPerProductNameMap.set(product.productName, productWithUnitPrice);
-        }
-      });
-      // Convert map values back to an array and sort them by unitPrice
-      return Array.from(cheapestPerProductNameMap.values()).sort((a, b) => a.unitPrice - b.unitPrice);
-    }
-
     // 星評価検索の場合、または検索キーワードが空の場合、そのまま返す
-    return tempFilteredProducts;
+    return tempFilteredProducts.sort((a, b) => a.unitPrice - b.unitPrice); // 単価でソート
   })();
 
   return (
@@ -224,7 +220,7 @@ const FavoriteProductsPage = () => {
                       <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.productName}`}</Typography>
                       <Typography component="span" variant="body1" sx={{ width: '8%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.priceExcludingTax}円`}</Typography>
                       <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '7%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
-                      <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '7%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography>
+                      <Typography component="span" variant="body1" sx={{ width: '10%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography> {/* 単価表示 */}
                       <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '12%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.storeName}`}</Typography>
                       <Button variant="outlined" size="small" sx={{ ml: 1, width: 'auto', flexShrink: 0 }} onClick={() => handleShowRelatedProducts(product.productName, product.volume)}>他店舗</Button>
                     </Box>
