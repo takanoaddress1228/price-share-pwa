@@ -136,7 +136,7 @@ const ProductRegistrationPage = () => {
           placeholder="イオン東雲店"
           value={storeName}
           onChange={(e) => setStoreName(e.target.value)}
-          margin="normal"
+          margin="dense" // ここを変更
           InputLabelProps={{ style: { color: '#616161' }, shrink: true }}
           InputProps={{ style: { color: '#424242' } }}
         />
