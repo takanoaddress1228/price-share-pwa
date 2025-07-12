@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogContent,
 } from '@mui/material';
+import StarIcon from '@mui/icons-material/Star'; // StarIconをインポート
 
 const ProductListPage = () => {
   const [products, setProducts] = useState([]);
@@ -202,8 +203,8 @@ const ProductListPage = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5" gutterBottom>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'nowrap' }}> {/* flexWrap: 'nowrap' を追加 */}
+        <Typography variant="h6" sx={{ whiteSpace: 'nowrap', fontSize: '1rem', flexShrink: 0 }}> {/* variantをh6に、whiteSpaceとfontSizeを追加 */}
           {showHiddenProductsView ? '非表示商品一覧' : '登録された商品一覧'}
         </Typography>
         <TextField
@@ -213,18 +214,32 @@ const ProductListPage = () => {
           value={searchKeyword}
           onChange={(e) => setSearchKeyword(e.target.value)}
           placeholder="商品名、または星評価 (0-3)"
-          sx={{ width: '45%' }}
+          sx={{ width: '45%', ml: 1 }} // mlを追加して間隔を調整
         />
         {showHiddenProductsView ? (
-          <Button variant="outlined" sx={{ ml: 2, py: 1, color: '#757575', borderColor: '#bdbdbd' }} onClick={handleBackToMainView}>
+          <Button variant="outlined" sx={{ ml: 1, py: 0.5, color: '#757575', borderColor: '#bdbdbd', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={handleBackToMainView}> {/* pyを0.5に、whiteSpaceとflexShrinkを追加 */}
             戻る
           </Button>
         ) : (
-          <Button variant="outlined" sx={{ ml: 2, py: 1, color: '#757575', borderColor: '#bdbdbd' }} onClick={handleShowHiddenProducts}>
+          <Button variant="outlined" sx={{ ml: 1, py: 0.5, color: '#757575', borderColor: '#bdbdbd', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={handleShowHiddenProducts}> {/* pyを0.5に、whiteSpaceとflexShrinkを追加 */}
             非表示をみる
           </Button>
         )}
       </Box>
+
+      {/* 星の意味表示を追加 */}
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexWrap: 'wrap', fontSize: '0.8rem' }}>
+        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+          <StarIcon sx={{ color: 'gold', fontSize: '1rem' }} />イマイチ
+        </Typography>
+        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+          <StarIcon sx={{ color: 'gold', fontSize: '1rem' }} /><StarIcon sx={{ color: 'gold', fontSize: '1rem' }} />ふつう
+        </Typography>
+        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+          <StarIcon sx={{ color: 'gold', fontSize: '1rem' }} /><StarIcon sx={{ color: 'gold', fontSize: '1rem' }} /><StarIcon sx={{ color: 'gold', fontSize: '1rem' }} />リピート
+        </Typography>
+      </Box>
+
       <List>
         {filteredProducts.length === 0 ? (
           <Typography variant="body2" color="text.secondary">まだ商品が登録されていません。</Typography>
