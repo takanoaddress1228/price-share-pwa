@@ -13,19 +13,19 @@ import {
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SearchIcon from '@mui/icons-material/Search';
-import StarIcon from '@mui/icons-material/Star'; // そのまま使用
+import StarIcon from '@mui/icons-material/Star';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 
 // 各画面コンポーネント
 import ProductRegistrationPage from './ProductRegistrationPage';
 import ProductListPage from './ProductListPage';
 const CheapestPriceSearchPage = () => <Typography variant="h4">最安値検索画面</Typography>;
-const PlaceholderPage = () => <Typography variant="h4">お気に入り画面</Typography>; // 変更
+const PlaceholderPage = () => <Typography variant="h4">お気に入り画面</Typography>;
 
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [value, setValue] = useState(0); // BottomNavigationの選択状態
+  const [value, setValue] = useState(0);
 
   const handleLogout = async () => {
     try {
@@ -39,9 +39,10 @@ const Dashboard = () => {
     <Box sx={{ pb: 7 }}>
       <AppBar position="static" sx={{ backgroundColor: '#616161' }}>
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          {/* <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Price Share PWA
-          </Typography>
+          </Typography> */} {/* この行を削除 */}
+          <Box sx={{ flexGrow: 1 }} /> {/* スペースを確保するために追加 */}
           <Button color="inherit" onClick={handleLogout}>
             ログアウト
           </Button>
@@ -68,7 +69,7 @@ const Dashboard = () => {
         >
           <BottomNavigationAction label="最安値検索" icon={<SearchIcon />} />
           <BottomNavigationAction label="商品登録" icon={<AddCircleOutlineIcon />} />
-          <BottomNavigationAction label="お気に入り" icon={<StarIcon />} /> {/* 変更 */}
+          <BottomNavigationAction label="お気に入り" icon={<StarIcon />} />
         </BottomNavigation>
       </Paper>
     </Box>
