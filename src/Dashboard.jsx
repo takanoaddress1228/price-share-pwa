@@ -42,7 +42,7 @@ const Dashboard = () => {
   }, [location.pathname]);
 
   return (
-    <Box sx={{ pb: 7 }}>
+    <Box sx={{ pt: '56px' }}>
       <Routes>
         <Route path="/register" element={<ProductRegistrationPage />} />
         <Route path="/search" element={<ProductListPage />} />
@@ -50,7 +50,7 @@ const Dashboard = () => {
         <Route path="/" element={<ProductRegistrationPage />} />
       </Routes>
 
-      <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000, width: '100%' }} elevation={3}>
+      <Paper sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, width: '100%' }} elevation={3}>
         <BottomNavigation
           showLabels
           value={value}

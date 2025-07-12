@@ -237,42 +237,65 @@ const ProductListPage = () => {
           <Typography variant="body2" color="text.secondary">まだ商品が登録されていません。</Typography>
         ) : (
           filteredProducts.map((product) => (
-            <Paper key={product.id} sx={{ mb: 1, p: 1 }}>
+            <Paper key={product.id} sx={{ mb: 1, p: 1, borderLeft: 'none', borderRight: 'none', boxShadow: '0px 1px 1px -1px rgba(0,0,0,0.2)' }} elevation={3}>
               <ListItem disablePadding>
                 <ListItemText
                   primary={
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'nowrap', gap: 0 }}>
-                      <Box
-                        onClick={() => {
-                          setCurrentProductForRating(product);
-                          setDialogRatingValue(userRatingsByProductName[product.productName] || 0);
-                          setOpenRatingDialog(true);
-                        }}
-                        sx={{ cursor: 'pointer', mr: 1, flexShrink: 0 }}
-                      >
-                        <Rating
-                          name={`rating-${product.id}`}
-                          value={userRatingsByProductName[product.productName] || 0}
-                          max={3}
-                          size="small"
-                          readOnly
-                        />
+                    <Box> {/* Outer Box for two lines */}
+                      {/* Line 1: Star Rating, Product Name, Price, Volume/Unit, Unit Price */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 0.5, mb: 0.5 }}> {/* mb for spacing between lines */}
+                        {/* Star Rating */}
+                        <Box
+                          onClick={() => {
+                            setCurrentProductForRating(product);
+                            setDialogRatingValue(userRatingsByProductName[product.productName] || 0);
+                            setOpenRatingDialog(true);
+                          }}
+                          sx={{ cursor: 'pointer', mr: 1, flexShrink: 0 }}
+                        >
+                          <Rating
+                            name={`rating-${product.id}`}
+                            value={userRatingsByProductName[product.productName] || 0}
+                            max={3}
+                            size="small"
+                            readOnly
+                          />
+                        </Box>
+                        {/* Product Name */}
+                        <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.productName}`}</Typography>
+                        {/* Price */}
+                        <Typography component="span" variant="body1" sx={{ width: 'auto', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.priceExcludingTax}円`}</Typography>
+                        {/* Volume/Unit */}
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '7%', flexShrink: 0, fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
+                        {/* Unit Price */}
+                        <Typography component="span" variant="caption" color="red" sx={{ width: '10%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography>
                       </Box>
-                      <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '8%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.manufacturer}`}</Typography>
-                      <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.productName}`}</Typography>
-                      <Typography component="span" variant="body1" sx={{ width: '8%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.priceExcludingTax}円`}</Typography>
-                      <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '7%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
-                      <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '7%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography>
-                      <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '12%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.storeName}`}</Typography>
-                      <Button variant="outlined" size="small" sx={{ width: 36, height: 36, minWidth: 36, flexShrink: 0 }} onClick={() => handleShowRelatedProducts(product.productName, product.volume)}>他</Button>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        sx={{ width: 36, height: 36, minWidth: 36, flexShrink: 0 }}
-                        onClick={() => handleToggleHiddenStatus(product.id, hiddenProductIds.includes(product.id))}
-                      >
-                        {hiddenProductIds.includes(product.id) ? '元に戻す' : '非'}
-                      </Button>
+
+                      {/* Line 2: Manufacturer, Store Name, Other Button, Hidden Button */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 0.5 }}>
+                        {/* Manufacturer */}
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '30%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.manufacturer}`}</Typography>
+                        {/* Store Name */}
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{
+                          width: '35%', // 例として35%を設定。必要に応じて調整
+                          flexShrink: 0,
+                          fontSize: '0.7rem',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}>{`${product.storeName}`}</Typography>
+                        {/* Other Button */}
+                        <Button variant="outlined" size="small" sx={{ width: 60, height: 36, minWidth: 36, flexShrink: 0 }} onClick={() => handleShowRelatedProducts(product.productName, product.volume)}>最安値</Button>
+                        {/* Hidden Button */}
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          sx={{ width: 60, height: 36, minWidth: 36, flexShrink: 0 }}
+                          onClick={() => handleToggleHiddenStatus(product.id, hiddenProductIds.includes(product.id))}
+                        >
+                          {hiddenProductIds.includes(product.id) ? '元に戻す' : '非表示'}
+                        </Button>
+                      </Box>
                     </Box>
                   }
                 />
@@ -311,9 +334,7 @@ const ProductListPage = () => {
       {/* 評価ダイアログ */}
       <Dialog open={openRatingDialog} onClose={() => setOpenRatingDialog(false)}>
         <DialogTitle>
-          <DialogTitle>
           <Typography sx={{ color: 'orange' }}>★イマイチ ★★ ふつう ★★★ リピート</Typography>
-        </DialogTitle>
         </DialogTitle>
         <DialogContent>
           {currentProductForRating && (
