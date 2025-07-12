@@ -147,6 +147,7 @@ const ProductRegistrationPage = () => {
           value={tags}
           onChange={(e) => setTags(e.target.value)}
           margin="normal"
+          sx={{ mt: 3 }} // ここを追加
           InputLabelProps={{ style: { color: '#616161' }, shrink: true }}
           InputProps={{ style: { color: '#424242' } }}
         />
