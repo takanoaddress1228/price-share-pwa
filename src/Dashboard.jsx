@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { auth } from './firebase';
-// import { signOut } from 'firebase/auth'; // 削除
 import {
   Box,
   Button,
   Typography,
-  // AppBar, // 削除
-  // Toolbar, // 削除
   BottomNavigation,
   BottomNavigationAction,
   Paper,
@@ -19,9 +16,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 // 各画面コンポーネント
 import ProductRegistrationPage from './ProductRegistrationPage';
 import ProductListPage from './ProductListPage';
-import FavoriteProductsPage from './FavoriteProductsPage'; // 追加
-// const CheapestPriceSearchPage = () => <Typography variant="h4">最安値検索画面</Typography>; // 削除
-// const PlaceholderPage = () => <Typography variant="h4">お気に入り画面</Typography>; // 削除
+import FavoriteProductsPage from './FavoriteProductsPage';
 
 
 const Dashboard = () => {
@@ -51,7 +46,7 @@ const Dashboard = () => {
       <Routes>
         <Route path="/register" element={<ProductRegistrationPage />} />
         <Route path="/search" element={<ProductListPage />} />
-        <Route path="/other" element={<FavoriteProductsPage />} /> {/* PlaceholderPageをFavoriteProductsPageに変更 */}
+        <Route path="/other" element={<FavoriteProductsPage />} />
         <Route path="/" element={<ProductRegistrationPage />} />
       </Routes>
 
@@ -69,14 +64,17 @@ const Dashboard = () => {
           <BottomNavigationAction
             label="お気に入り"
             icon={<StarOutlineIcon sx={{ color: value === 0 ? 'primary.main' : 'text.secondary' }} />} 
+            sx={{ flex: 1 }} // 追加
           />
           <BottomNavigationAction
             label="商品登録"
             icon={<AddCircleOutlineIcon sx={{ color: value === 1 ? 'primary.main' : 'text.secondary' }} />} 
+            sx={{ flex: 1 }} // 追加
           />
           <BottomNavigationAction
             label="最安値検索"
             icon={<SearchIcon sx={{ color: value === 2 ? 'primary.main' : 'text.secondary' }} />} 
+            sx={{ flex: 1 }} // 追加
           />
         </BottomNavigation>
       </Paper>
