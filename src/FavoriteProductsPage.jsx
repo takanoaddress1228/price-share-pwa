@@ -152,34 +152,25 @@ const FavoriteProductsPage = () => {
   })();
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'nowrap' }}>
-        <Typography variant="h6" sx={{ whiteSpace: 'nowrap', fontSize: '1rem', flexShrink: 0 }}>
-          お気に入り商品一覧
-        </Typography>
+    <Box sx={{ p: 3, pt: '70px' }}>
+      <Box sx={{ mb: 2, position: 'sticky', top: 0, zIndex: 100 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'nowrap', mb: 1 }}>
+          <Typography variant="h6" sx={{ whiteSpace: 'nowrap', fontSize: '1.4rem', flexShrink: 0 }}>
+            お気に入り商品一覧
+          </Typography>
+        </Box>
         <TextField
-          label="商品を検索"
+          label="キーワードやタグで検索"
           variant="outlined"
           size="small"
           value={searchKeyword}
           onChange={(e) => setSearchKeyword(e.target.value)}
           placeholder="商品名、星評価 (0-3), タグ"
-          sx={{ width: '45%', ml: 1 }}
+          sx={{ width: '100%' }}
         />
       </Box>
 
-      {/* 星の意味表示を追加 */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexWrap: 'wrap', fontSize: '0.8rem' }}>
-        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-          <StarIcon sx={{ color: 'gold', fontSize: '1rem' }} />イマイチ
-        </Typography>
-        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-          <StarIcon sx={{ color: 'gold', fontSize: '1rem' }} /><StarIcon sx={{ color: 'gold', fontSize: '1rem' }} />ふつう
-        </Typography>
-        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
-          <StarIcon sx={{ color: 'gold', fontSize: '1rem' }} /><StarIcon sx={{ color: 'gold', fontSize: '1rem' }} /><StarIcon sx={{ color: 'gold', fontSize: '1rem' }} />リピート
-        </Typography>
-      </Box>
+      
 
       <List>
         {filteredProducts.length === 0 ? (
@@ -190,39 +181,73 @@ const FavoriteProductsPage = () => {
               <ListItem disablePadding>
                 <ListItemText
                   primary={
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'nowrap', gap: 0 }}>
-                      <Rating
-                        name={`rating-${product.id}`}
-                        value={userRatingsByProductName[product.productName] || 0}
-                        max={3}
-                        size="small"
-                        sx={{ mr: 1, flexShrink: 0 }}
-                        onChange={async (event, newValue) => {
-                          if (auth.currentUser) {
-                            const confirmSave = confirm('この評価を保存しますか？同じ商品名の他の商品にも適用されます。');
-                            if (confirmSave) {
-                              try {
-                                const ratingRef = collection(db, `users/${auth.currentUser.uid}/productNameRatings`);
-                                await setDoc(doc(ratingRef, product.productName), { rating: newValue });
-                              } catch (error) {
-                                console.error("評価の保存エラー:", error);
-                                alert("評価の保存中にエラーが発生しました。");
+                    <Box> {/* Outer Box for two lines */}
+                      {/* Line 1: Star Rating, Product Name, Price, Volume/Unit, Unit Price */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 0.5, mb: 0.5 }}> {/* mb for spacing between lines */}
+                        {/* Star Rating */}
+                        <Box
+                          sx={{ cursor: 'pointer', mr: 1, flexShrink: 0 }}
+                        >
+                          <Rating
+                            name={`rating-${product.id}`}
+                            value={userRatingsByProductName[product.productName] || 0}
+                            max={3}
+                            size="small"
+                            onChange={async (event, newValue) => {
+                              if (auth.currentUser) {
+                                const confirmSave = confirm('この評価を保存しますか？同じ商品名の他の商品にも適用されます。');
+                                if (confirmSave) {
+                                  try {
+                                    const ratingRef = collection(db, `users/${auth.currentUser.uid}/productNameRatings`);
+                                    await setDoc(doc(ratingRef, product.productName), { rating: newValue });
+                                  } catch (error) {
+                                    console.error("評価の保存エラー:", error);
+                                    alert("評価の保存中にエラーが発生しました。");
+                                  }
+                                } else {
+                                  console.log('評価の保存がキャンセルされました。');
+                                }
+                              } else {
+                                alert('ログインして評価してください。');
                               }
-                            } else {
-                              console.log('評価の保存がキャンセルされました。');
-                            }
-                          } else {
-                            alert('ログインして評価してください。');
-                          }
-                        }}
-                      />
-                      <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '8%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.manufacturer}`}</Typography>
-                      <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.productName}`}</Typography>
-                      <Typography component="span" variant="body1" sx={{ width: '8%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.priceExcludingTax}円`}</Typography>
-                      <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '7%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
-                      <Typography component="span" variant="body1" sx={{ width: '10%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography> {/* 単価表示 */}
-                      <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '12%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.storeName}`}</Typography>
-                      <Button variant="outlined" size="small" sx={{ ml: 1, width: 'auto', flexShrink: 0 }} onClick={() => handleShowRelatedProducts(product.productName, product.volume)}>他店舗</Button>
+                            }}
+                          />
+                        </Box>
+                        {/* Product Name */}
+                        <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.productName}`}</Typography>
+                        {/* Price */}
+                        <Typography component="span" variant="body1" sx={{ width: 'auto', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.priceExcludingTax}円`}</Typography>
+                        {/* Volume/Unit */}
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '7%', flexShrink: 0, fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
+                        {/* Unit Price */}
+                        <Typography component="span" variant="caption" color="red" sx={{ width: '10%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography>
+                      </Box>
+
+                      {/* Line 2: Manufacturer, Store Name, Other Button */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 0.5 }}>
+                        {/* Manufacturer */}
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '20%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.manufacturer}`}</Typography>
+                        {/* Store Name */}
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{
+                          flexGrow: 1,
+                          flexShrink: 0,
+                          fontSize: '0.7rem',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          mr: 1
+                        }}>{`${product.storeName}`}</Typography>
+                        {/* 最安値 Button (gray styling) */}
+                        <Button variant="outlined" size="small" sx={{
+                          width: 60, height: 36, minWidth: 36, flexShrink: 0,
+                          color: '#757575', // グレー系の色
+                          borderColor: '#bdbdbd', // グレー系の色
+                          '&:hover': {
+                            borderColor: '#616161', // ホバー時の色を少し濃く
+                            backgroundColor: 'rgba(0, 0, 0, 0.04)', // ホバー時の背景色
+                          },
+                        }} onClick={() => handleShowRelatedProducts(product.productName, product.volume)}>最安値</Button>
+                      </Box>
                     </Box>
                   }
                 />
@@ -233,7 +258,7 @@ const FavoriteProductsPage = () => {
       </List>
 
       <Dialog open={openRelatedProductsDialog} onClose={handleCloseRelatedProductsDialog} fullWidth={true} maxWidth="lg">
-        <DialogTitle>関連商品</DialogTitle>
+        <DialogTitle sx={{ textAlign: 'center' }}>最安値</DialogTitle>
         <DialogContent>
           <List>
             {relatedProducts.length === 0 ? (
@@ -243,11 +268,17 @@ const FavoriteProductsPage = () => {
                 <ListItem key={index} disablePadding>
                   <ListItemText
                     primary={
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-                        <Typography component="span" variant="body1" sx={{ width: '45%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.productName}`}</Typography>
-                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '10%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.volume}${p.unit}`}</Typography>
-                        <Typography component="span" variant="body1" sx={{ width: '10%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.unitPrice.toFixed(2)}円/${p.unit}`}</Typography>
-                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '35%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.storeName}`}</Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}> {/* 2行表示のための変更 */}
+                        {/* 1行目: 商品名・価格 */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 0.5 }}>
+                          <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.productName}`}</Typography>
+                          <Typography component="span" variant="body1" sx={{ width: '20%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.priceExcludingTax}円`}</Typography>
+                        </Box>
+                        {/* 2行目: 単価・店名 */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 0.5 }}>
+                          <Typography component="span" variant="body1" color="red" sx={{ width: '30%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.unitPrice.toFixed(2)}円/${p.unit}`}</Typography>
+                          <Typography component="span" variant="caption" color="text.secondary" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.storeName}`}</Typography>
+                        </Box>
                       </Box>
                     }
                   />
