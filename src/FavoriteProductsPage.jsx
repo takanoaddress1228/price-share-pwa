@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from './firebase';
-import { collection, query, orderBy, onSnapshot, doc, setDoc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, setDoc, where } from 'firebase/firestore';
 import {
   Box,
   Button,
@@ -269,10 +269,13 @@ const FavoriteProductsPage = () => {
                   <ListItemText
                     primary={
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}> {/* 2行表示のための変更 */}
-                        {/* 1行目: 商品名・価格 */}
+                        {/* 1行目: 商品名・価格・内容量 */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 0.5 }}>
                           <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.productName}`}</Typography>
-                          <Typography component="span" variant="body1" sx={{ width: '20%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.priceExcludingTax}円`}</Typography>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                            <Typography component="span" variant="body1" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.priceExcludingTax}円`}</Typography>
+                            <Typography component="span" variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${p.volume}${p.unit}`}</Typography>
+                          </Box>
                         </Box>
                         {/* 2行目: 単価・店名 */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 0.5 }}>
