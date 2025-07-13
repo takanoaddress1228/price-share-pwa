@@ -147,7 +147,7 @@ const ProductListPage = () => {
   const filteredProducts = (() => {
     let baseProducts = products;
 
-    // 非表示商品一覧表示の場合
+    // 非表示にした商品表示の場合
     if (showHiddenProductsView) {
       baseProducts = products.filter(product => hiddenProductIds.includes(product.id));
     } else {
@@ -209,22 +209,74 @@ const ProductListPage = () => {
       <Box sx={{ mb: 2 }}> {/* 親のBoxのflex設定を削除 */}
         <Box sx={{ mb: 2, position: 'sticky', top: 0, zIndex: 100 }}> {/* Added sticky properties */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'nowrap', mb: 1 }}> {/* タイトルとボタンの行 */}
-          <Typography variant="h6" sx={{ whiteSpace: 'nowrap', fontSize: '1.2rem', flexShrink: 0 }}>
-            {showHiddenProductsView ? '非表示した商品' : '登録された商品一覧'}
+          <Typography
+            variant="h6"
+            sx={{
+              whiteSpace: 'nowrap',
+              fontSize: '1.4rem', // フォントサイズを大きく
+              flexShrink: 0,
+              color: showHiddenProductsView ? '#B22222' : '#2196F3', // テキストに応じて色を動的に設定
+            }}
+          >
+            {showHiddenProductsView ? '非表示にした商品' : '登録された商品一覧'}
           </Typography>
           {showHiddenProductsView ? (
-            <Button variant="outlined" sx={{ py: 0.5, color: '#757575', borderColor: '#bdbdbd', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={handleBackToMainView}>
+            <Button variant="text" sx={{
+              py: 0.5,
+              color: '#B22222', // ワインレッド系の色
+              border: '1px solid #B22222', // ワインレッド系の枠線
+              borderWidth: '1px', // 枠線を細く
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              boxShadow: 'none', // 影を削除
+              outline: 'none', // アウトラインを削除
+              backgroundColor: 'white', // 背景色を白に設定
+              '&:hover': {
+                borderColor: '#800020', // ホバー時の色を少し濃く
+                backgroundColor: 'rgba(178, 34, 34, 0.04)', // ホバー時の背景色
+              },
+              '&:focus': {
+                outline: 'none', // フォーカス時のアウトラインを削除
+              },
+              '&:active': {
+                outline: 'none', // アクティブ時のアウトラインを削除
+              },
+              '&:focus-visible': {
+                outline: 'none', // キーボードナビゲーション時のアウトラインを削除
+              },
+            }} onClick={handleBackToMainView}>
               戻る
             </Button>
           ) : (
-            <Button variant="outlined" sx={{ py: 0.5, color: '#757575', borderColor: '#bdbdbd', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={handleShowHiddenProducts}>
+            <Button variant="outlined" sx={{
+              py: 0.5,
+              color: '#2196F3', // 青色
+              borderColor: '#2196F3', // 青色
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              boxShadow: 'none', // 影を削除
+              outline: 'none', // アウトラインを削除
+              '&:hover': {
+                borderColor: '#1976D2', // ホバー時の色を少し濃く
+                backgroundColor: 'rgba(33, 150, 243, 0.04)', // ホバー時の背景色
+              },
+              '&:focus': {
+                outline: 'none', // フォーカス時のアウトラインを削除
+              },
+              '&:active': {
+                outline: 'none', // アクティブ時のアウトラインを削除
+              },
+              '&:focus-visible': {
+                outline: 'none', // キーボードナビゲーション時のアウトラインを削除
+              },
+            }} onClick={handleShowHiddenProducts}>
               非表示をみる
             </Button>
           )}
         </Box>
         {/* 検索フィールドをタイトルの下に配置 */}
         <TextField
-          label={showHiddenProductsView ? "非表示した商品を検索" : "商品を検索"}
+          label={showHiddenProductsView ? "非表示にした商品を検索" : "商品を検索"}
           variant="outlined"
           size="small"
           value={searchKeyword}
@@ -291,15 +343,39 @@ const ProductListPage = () => {
                           mr: 1
                         }}>{`${product.storeName}`}</Typography>
                         {/* Other Button */}
-                        <Button variant="outlined" size="small" sx={{ width: 60, height: 36, minWidth: 36, flexShrink: 0 }} onClick={() => handleShowRelatedProducts(product.productName, product.volume)}>最安値</Button>
+                        <Button variant="outlined" size="small" sx={{
+                          width: 60, height: 36, minWidth: 36, flexShrink: 0,
+                          color: '#757575', // グレー系の色
+                          borderColor: '#bdbdbd', // グレー系の色
+                          '&:hover': {
+                            borderColor: '#616161', // ホバー時の色を少し濃く
+                            backgroundColor: 'rgba(0, 0, 0, 0.04)', // ホバー時の背景色
+                          },
+                        }} onClick={() => handleShowRelatedProducts(product.productName, product.volume)}>最安値</Button>
                         {/* Hidden Button */}
                         <Button
                           variant="outlined"
                           size="small"
-                          sx={{ width: 60, height: 36, minWidth: 36, flexShrink: 0 }}
+                          sx={hiddenProductIds.includes(product.id) ? { // If it's a hidden product (button says "再表示")
+                            width: 60, height: 36, minWidth: 36, flexShrink: 0,
+                            color: '#B22222', // ワインレッド系の色
+                            borderColor: '#B22222', // ワインレッド系の色
+                            '&:hover': {
+                              borderColor: '#800020', // ホバー時の色を少し濃く
+                              backgroundColor: 'rgba(178, 34, 34, 0.04)', // ホバー時の背景色
+                            },
+                          } : { // If it's not a hidden product (button says "非表示")
+                            width: 60, height: 36, minWidth: 36, flexShrink: 0,
+                            color: '#2196F3', // 青色
+                            borderColor: '#2196F3', // 青色
+                            '&:hover': {
+                              borderColor: '#1976D2', // ホバー時の色を少し濃く
+                              backgroundColor: 'rgba(33, 150, 243, 0.04)', // ホバー時の背景色
+                            },
+                          }}
                           onClick={() => handleToggleHiddenStatus(product.id, hiddenProductIds.includes(product.id))}
                         >
-                          {hiddenProductIds.includes(product.id) ? '元に戻す' : '非表示'}
+                          {hiddenProductIds.includes(product.id) ? '再表示' : '非表示'}
                         </Button>
                       </Box>
                     </Box>

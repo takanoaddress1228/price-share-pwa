@@ -22,20 +22,29 @@ import FavoriteProductsPage from './FavoriteProductsPage';
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [value, setValue] = useState(1);
+
+  const getInitialValue = () => {
+    const currentPath = location.pathname;
+    if (currentPath.includes('/other')) {
+      return 0;
+    } else if (currentPath.includes('/search')) {
+      return 2;
+    } else if (currentPath.includes('/register') || currentPath === '/price-share-pwa/') {
+      return 1;
+    }
+    return 1; // Default to 商品登録
+  };
+
+  const [value, setValue] = useState(getInitialValue());
 
   useEffect(() => {
-    switch (location.pathname) {
-      case '/price-share-pwa/other':
-        setValue(0);
-        break;
-      case '/price-share-pwa/register':
-      case '/price-share-pwa/':
-        setValue(1);
-        break;
-      case '/price-share-pwa/search':
-        setValue(2);
-        break;
+    const currentPath = location.pathname;
+    if (currentPath.includes('/other')) {
+      setValue(0);
+    } else if (currentPath.includes('/search')) {
+      setValue(2);
+    } else if (currentPath.includes('/register') || currentPath === '/price-share-pwa/') {
+      setValue(1);
     }
   }, [location.pathname]);
 
