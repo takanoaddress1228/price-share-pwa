@@ -36,8 +36,6 @@ const Dashboard = () => {
       case '/price-share-pwa/search':
         setValue(2);
         break;
-      default:
-        setValue(1);
     }
   }, [location.pathname]);
 
@@ -61,20 +59,11 @@ const Dashboard = () => {
             if (newValue === 2) navigate('/search');
           }}
         >
-          <BottomNavigationAction
-            label="お気に入り"
-            icon={<StarOutlineIcon sx={{ color: value === 0 ? 'primary.main' : 'text.secondary' }} />} 
-            sx={{ flex: 1 }} // 追加
+          <BottomNavigationAction            label="お気に入り"            icon={<StarOutlineIcon sx={{ color: value === 0 ? 'primary.main' : 'text.secondary' }} />}             sx={{ flex: 1 }}
           />
-          <BottomNavigationAction
-            label="商品登録"
-            icon={<AddCircleOutlineIcon sx={{ color: value === 1 ? 'primary.main' : 'text.secondary' }} />} 
-            sx={{ flex: 1 }} // 追加
+          <BottomNavigationAction            label="商品登録"            icon={<AddCircleOutlineIcon sx={{ color: value === 1 ? 'primary.main' : 'text.secondary' }} />}             sx={{ flex: 1 }}
           />
-          <BottomNavigationAction
-            label="最安値検索"
-            icon={<SearchIcon sx={{ color: value === 2 ? 'primary.main' : 'text.secondary' }} />} 
-            sx={{ flex: 1 }} // 追加
+          <BottomNavigationAction            label="最安値検索"            icon={<SearchIcon sx={{ color: value === 2 ? 'primary.main' : 'text.secondary' }} />}             sx={{ flex: 1 }}
           />
         </BottomNavigation>
       </Paper>

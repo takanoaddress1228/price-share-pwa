@@ -206,10 +206,23 @@ const ProductListPage = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'nowrap' }}>
-        <Typography variant="h6" sx={{ whiteSpace: 'nowrap', fontSize: '1rem', flexShrink: 0 }}>
-          {showHiddenProductsView ? '非表示商品一覧' : '登録された商品一覧'}
-        </Typography>
+      <Box sx={{ mb: 2 }}> {/* 親のBoxのflex設定を削除 */}
+        <Box sx={{ mb: 2, position: 'sticky', top: 0, zIndex: 100 }}> {/* Added sticky properties */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'nowrap', mb: 1 }}> {/* タイトルとボタンの行 */}
+          <Typography variant="h6" sx={{ whiteSpace: 'nowrap', fontSize: '1.2rem', flexShrink: 0 }}>
+            {showHiddenProductsView ? '非表示商品一覧' : '登録された商品一覧'}
+          </Typography>
+          {showHiddenProductsView ? (
+            <Button variant="outlined" sx={{ py: 0.5, color: '#757575', borderColor: '#bdbdbd', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={handleBackToMainView}>
+              戻る
+            </Button>
+          ) : (
+            <Button variant="outlined" sx={{ py: 0.5, color: '#757575', borderColor: '#bdbdbd', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={handleShowHiddenProducts}>
+              非表示をみる
+            </Button>
+          )}
+        </Box>
+        {/* 検索フィールドをタイトルの下に配置 */}
         <TextField
           label={showHiddenProductsView ? "非表示の商品を検索" : "商品を検索"}
           variant="outlined"
@@ -217,24 +230,16 @@ const ProductListPage = () => {
           value={searchKeyword}
           onChange={(e) => setSearchKeyword(e.target.value)}
           placeholder="商品名、または星評価 (0-3)"
-          sx={{ width: '45%', ml: 1 }}
+          sx={{ width: '100%' }} // 幅を100%に
         />
-        {showHiddenProductsView ? (
-          <Button variant="outlined" sx={{ ml: 1, py: 0.5, color: '#757575', borderColor: '#bdbdbd', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={handleBackToMainView}>
-            戻る
-          </Button>
-        ) : (
-          <Button variant="outlined" sx={{ ml: 1, py: 0.5, color: '#757575', borderColor: '#bdbdbd', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={handleShowHiddenProducts}>
-            非表示をみる
-          </Button>
-        )}
+      </Box>
       </Box>
 
       
 
       <List>
         {filteredProducts.length === 0 ? (
-          <Typography variant="body2" color="text.secondary">まだ商品が登録されていません。</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>まだ商品が登録されていません。</Typography>
         ) : (
           filteredProducts.map((product) => (
             <Paper key={product.id} sx={{ mb: 1, p: 1, borderLeft: 'none', borderRight: 'none', boxShadow: '0px 1px 1px -1px rgba(0,0,0,0.2)' }} elevation={3}>
@@ -274,15 +279,16 @@ const ProductListPage = () => {
                       {/* Line 2: Manufacturer, Store Name, Other Button, Hidden Button */}
                       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 0.5 }}>
                         {/* Manufacturer */}
-                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '30%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.manufacturer}`}</Typography>
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '20%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.manufacturer}`}</Typography>
                         {/* Store Name */}
                         <Typography component="span" variant="caption" color="text.secondary" sx={{
-                          width: '35%', // 例として35%を設定。必要に応じて調整
+                          flexGrow: 1,
                           flexShrink: 0,
                           fontSize: '0.7rem',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
+                          mr: 1
                         }}>{`${product.storeName}`}</Typography>
                         {/* Other Button */}
                         <Button variant="outlined" size="small" sx={{ width: 60, height: 36, minWidth: 36, flexShrink: 0 }} onClick={() => handleShowRelatedProducts(product.productName, product.volume)}>最安値</Button>
@@ -306,7 +312,7 @@ const ProductListPage = () => {
       </List>
 
       <Dialog open={openRelatedProductsDialog} onClose={handleCloseRelatedProductsDialog} fullWidth={true} maxWidth="lg">
-        <DialogTitle>関連商品</DialogTitle>
+        <DialogTitle sx={{ textAlign: 'center' }}>最安値</DialogTitle>
         <DialogContent>
           <List>
             {relatedProducts.length === 0 ? (
@@ -316,11 +322,17 @@ const ProductListPage = () => {
                 <ListItem key={index} disablePadding>
                   <ListItemText
                     primary={
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-                        <Typography component="span" variant="body1" sx={{ width: '45%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.productName}`}</Typography>
-                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '10%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.volume}${p.unit}`}</Typography>
-                        <Typography component="span" variant="body1" sx={{ width: '10%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.unitPrice.toFixed(2)}円/${p.unit}`}</Typography>
-                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '35%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.storeName}`}</Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}> {/* 2行表示のための変更 */}
+                        {/* 1行目: 商品名・価格 */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 0.5 }}>
+                          <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.productName}`}</Typography>
+                          <Typography component="span" variant="body1" sx={{ width: '20%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.priceExcludingTax}円`}</Typography>
+                        </Box>
+                        {/* 2行目: 単価・店名 */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 0.5 }}>
+                          <Typography component="span" variant="body1" color="red" sx={{ width: '30%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.unitPrice.toFixed(2)}円/${p.unit}`}</Typography>
+                          <Typography component="span" variant="caption" color="text.secondary" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.storeName}`}</Typography>
+                        </Box>
                       </Box>
                     }
                   />
