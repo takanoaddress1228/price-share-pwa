@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { auth } from './firebase';
 import {
@@ -40,12 +39,11 @@ const Login = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        width: '100%', // 画面全体の幅を使用
         display: 'flex',
+        flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f8f9fa', // 白に近い淡いグレーの背景
+        minHeight: '100vh',
         p: 2,
       }}
     >

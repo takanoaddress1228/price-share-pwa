@@ -75,12 +75,12 @@ const ProductRegistrationPage = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}> {/* 追加 */}
+    <Box sx={{ p: 3, pt: 0 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}> {/* 追加 */}
         <Typography variant="h5" component="h1"> {/* mb: 2 を削除 */}
           商品登録
         </Typography>
-        <Button variant="outlined" sx={{ color: '#616161', borderColor: '#bdbdbd', py: 1.5 }} onClick={handleLogout}> {/* 追加 */}
+        <Button variant="text" sx={{ color: '#616161', py: 1.5 }} onClick={handleLogout}> {/* 変更 */}
           ログアウト
         </Button>
       </Box>

@@ -34,12 +34,14 @@ function App() {
   }
 
   return (
-    <BrowserRouter basename="/price-share-pwa"> {/* ここにbasenameを追加 */}
-      <Routes>
-        <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
-        <Route path="/*" element={user ? <Dashboard /> : <Navigate to="/login" />} />
-      </Routes>
-    </BrowserRouter>
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <BrowserRouter basename="/price-share-pwa"> {/* ここにbasenameを追加 */}
+        <Routes>
+          <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+          <Route path="/*" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+        </Routes>
+      </BrowserRouter>
+    </Box>
   );
 }
 

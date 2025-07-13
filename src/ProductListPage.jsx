@@ -205,12 +205,12 @@ const ProductListPage = () => {
   })();
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3, pt: '70px' }}>
       <Box sx={{ mb: 2 }}> {/* 親のBoxのflex設定を削除 */}
         <Box sx={{ mb: 2, position: 'sticky', top: 0, zIndex: 100 }}> {/* Added sticky properties */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'nowrap', mb: 1 }}> {/* タイトルとボタンの行 */}
           <Typography variant="h6" sx={{ whiteSpace: 'nowrap', fontSize: '1.2rem', flexShrink: 0 }}>
-            {showHiddenProductsView ? '非表示商品一覧' : '登録された商品一覧'}
+            {showHiddenProductsView ? '非表示した商品' : '登録された商品一覧'}
           </Typography>
           {showHiddenProductsView ? (
             <Button variant="outlined" sx={{ py: 0.5, color: '#757575', borderColor: '#bdbdbd', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={handleBackToMainView}>
@@ -224,7 +224,7 @@ const ProductListPage = () => {
         </Box>
         {/* 検索フィールドをタイトルの下に配置 */}
         <TextField
-          label={showHiddenProductsView ? "非表示の商品を検索" : "商品を検索"}
+          label={showHiddenProductsView ? "非表示した商品を検索" : "商品を検索"}
           variant="outlined"
           size="small"
           value={searchKeyword}

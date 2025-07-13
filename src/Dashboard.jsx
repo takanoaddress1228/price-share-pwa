@@ -22,7 +22,7 @@ import FavoriteProductsPage from './FavoriteProductsPage';
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState(1);
 
   useEffect(() => {
     switch (location.pathname) {
@@ -40,7 +40,7 @@ const Dashboard = () => {
   }, [location.pathname]);
 
   return (
-    <Box sx={{ pt: '56px' }}>
+    <Box>
       <Routes>
         <Route path="/register" element={<ProductRegistrationPage />} />
         <Route path="/search" element={<ProductListPage />} />
@@ -48,7 +48,7 @@ const Dashboard = () => {
         <Route path="/" element={<ProductRegistrationPage />} />
       </Routes>
 
-      <Paper sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, width: '100%' }} elevation={3}>
+      <Paper sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, width: '100%', boxShadow: 'none', borderBottom: '1px solid #e0e0e0' }} elevation={0}>
         <BottomNavigation
           showLabels
           value={value}
@@ -58,12 +58,22 @@ const Dashboard = () => {
             if (newValue === 1) navigate('/register');
             if (newValue === 2) navigate('/search');
           }}
+          sx={{ border: 'none', boxShadow: 'none' }}
         >
-          <BottomNavigationAction            label="お気に入り"            icon={<StarOutlineIcon sx={{ color: value === 0 ? 'primary.main' : 'text.secondary' }} />}             sx={{ flex: 1 }}
+          <BottomNavigationAction
+            label="お気に入り"
+            icon={<StarOutlineIcon sx={{ color: value === 0 ? 'primary.main' : 'text.secondary' }} />}
+            sx={{ flex: 1, border: 'none', outline: 'none', boxShadow: 'none', '&:focus': { outline: 'none' }, '&:active': { outline: 'none' }, '&:focus-visible': { outline: 'none' } }}
           />
-          <BottomNavigationAction            label="商品登録"            icon={<AddCircleOutlineIcon sx={{ color: value === 1 ? 'primary.main' : 'text.secondary' }} />}             sx={{ flex: 1 }}
+          <BottomNavigationAction
+            label="商品登録"
+            icon={<AddCircleOutlineIcon sx={{ color: value === 1 ? 'primary.main' : 'text.secondary' }} />}
+            sx={{ flex: 1, border: 'none', outline: 'none', boxShadow: 'none', '&:focus': { outline: 'none' }, '&:active': { outline: 'none' }, '&:focus-visible': { outline: 'none' } }}
           />
-          <BottomNavigationAction            label="最安値検索"            icon={<SearchIcon sx={{ color: value === 2 ? 'primary.main' : 'text.secondary' }} />}             sx={{ flex: 1 }}
+          <BottomNavigationAction
+            label="最安値検索"
+            icon={<SearchIcon sx={{ color: value === 2 ? 'primary.main' : 'text.secondary' }} />}
+            sx={{ flex: 1, border: 'none', outline: 'none', boxShadow: 'none', '&:focus': { outline: 'none' }, '&:active': { outline: 'none' }, '&:focus-visible': { outline: 'none' } }}
           />
         </BottomNavigation>
       </Paper>
