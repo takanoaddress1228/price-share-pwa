@@ -51,7 +51,7 @@ const Dashboard = () => {
   return (
     <Box>
       <Routes>
-        <Route path="/register" element={<ProductRegistrationPage />} />
+        <Route path="/register/:productId?" element={<ProductRegistrationPage />} />
         <Route path="/search" element={<ProductListPage />} />
         <Route path="/other" element={<FavoriteProductsPage />} />
         <Route path="/" element={<ProductRegistrationPage />} />

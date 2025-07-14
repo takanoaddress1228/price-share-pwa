@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from './firebase';
 import { collection, query, orderBy, onSnapshot, doc, setDoc, getDoc, deleteDoc, where } from 'firebase/firestore';
+import { useLocation, useNavigate } from 'react-router-dom'; // useLocation と useNavigate をまとめてインポート
 import {
   Box,
   Button,
@@ -14,10 +15,15 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  IconButton, // 追加
 } from '@mui/material';
-import StarIcon from '@mui/icons-material/Star'; // StarIconをインポート
+import StarIcon from '@mui/icons-material/Star';
+import ClearIcon from '@mui/icons-material/Clear'; // 削除アイコン
+import EditIcon from '@mui/icons-material/Edit';   // 編集アイコン
 
 const ProductListPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation(); // useLocation も追加
   const formatRegistrationDate = (timestamp) => {
     if (!timestamp) return '';
 
@@ -36,6 +42,17 @@ const ProductListPage = () => {
       return `${months}ヶ月前`;
     } else {
       return '半年前';
+    }
+  };
+
+  const formatUnitPrice = (price) => {
+    if (price === Infinity) return '-';
+    if (price >= 100) {
+      return Math.round(price);
+    } else if (price >= 10) {
+      return price.toFixed(1);
+    } else {
+      return price.toFixed(2);
     }
   };
 
@@ -191,6 +208,8 @@ const ProductListPage = () => {
       const manufacturerHiragana = toHiragana(manufacturerLower);
       const manufacturerKatakana = toHalfWidthKatakana(manufacturerLower);
 
+      const tagMatch = (product.tags || []).some(tag => tag.toLowerCase().includes(keyword));
+
       return (
         (isRatingSearch && (userRatingsByProductName[product.productName] || 0) === searchRating) || // 星評価が一致する場合
         (!isRatingSearch && ( // 星評価検索ではない場合、既存のキーワード検索を実行
@@ -199,7 +218,8 @@ const ProductListPage = () => {
           productNameHiragana.includes(keyword) ||
           productNameKatakana.includes(keyword) ||
           manufacturerHiragana.includes(keyword) ||
-          manufacturerKatakana.includes(keyword)
+          manufacturerKatakana.includes(keyword) ||
+          tagMatch // タグ検索を追加
         ))
       );
     });
@@ -302,20 +322,24 @@ const ProductListPage = () => {
           size="small"
           value={searchKeyword}
           onChange={(e) => setSearchKeyword(e.target.value)}
-          // placeholder="商品名、または星評価 (0-3)" // 削除
+          placeholder="商品名、星評価 (0-3), タグ" // タグを追加
           sx={{
             width: '100%',
             // デフォルトの枠線色 (グレー系)
             '& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
               borderColor: '#bdbdbd', // 薄いグレー
             },
-            // フォーカス時の枠線色 (ワインレッド系)
+            // フォーカス時の枠線色 (グレー系)
             '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#B22222', // ワインレッド
+              borderColor: '#616161', // グレー
             },
             // ホバー時の枠線色 (少し濃いグレー)
             '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
               borderColor: '#757575', // 通常のグレー
+            },
+            // 入力文字の色
+            '& .MuiInputBase-input': {
+              color: '#424242', // 濃いグレー
             },
           }}
           InputLabelProps={{
@@ -323,7 +347,7 @@ const ProductListPage = () => {
               color: '#616161', // ラベルの初期色をグレーに固定
             },
             sx: {
-              // フローティングラベルがフォーカスされた時の色 (ワインレッド系)
+              // フローティングラベルがフォーカスされた時の色
               '&.Mui-focused': {
                 color: '#B22222', // ワインレッド
               },
@@ -372,7 +396,7 @@ const ProductListPage = () => {
                         {/* Volume/Unit */}
                         <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '10%', flexShrink: 0, fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
                         {/* Unit Price */}
-                        <Typography component="span" variant="caption" color="red" sx={{ width: '12%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography>
+                        <Typography component="span" variant="caption" color="red" sx={{ width: '12%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${formatUnitPrice(product.volume > 0 ? (product.priceExcludingTax / product.volume) : Infinity)}${product.unit === '入り' ? '' : product.unit}`}</Typography>
                       </Box>
 
                       {/* Line 2: Manufacturer, Store Name, Other Button, Hidden Button */}
@@ -427,6 +451,33 @@ const ProductListPage = () => {
                         >
                           {hiddenProductIds.includes(product.id) ? '再表示' : '非表示'}
                         </Button>
+                        {/* 編集・削除ボタン */}
+                        {auth.currentUser && product.userId === auth.currentUser.uid && (
+                          <>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/register/${product.id}`);
+                              }}
+                              sx={{ color: '#616161', p: 0.5, ml: 0.5 }} // グレー系の色に変更
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (window.confirm('この商品を削除しますか？')) {
+                                  deleteDoc(doc(db, "products", product.id));
+                                }
+                              }}
+                              sx={{ color: '#616161', p: 0.5 }} // グレー系の色に変更
+                            >
+                              <ClearIcon fontSize="small" />
+                            </IconButton>
+                          </>
+                        )}
                       </Box>
                     </Box>
                   }
@@ -459,7 +510,7 @@ const ProductListPage = () => {
                         </Box>
                         {/* 2行目: 単価・店名 */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 0.5 }}>
-                          <Typography component="span" variant="body1" color="red" sx={{ width: '30%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.unitPrice.toFixed(2)}円/${p.unit}`}</Typography>
+                          <Typography component="span" variant="body1" color="red" sx={{ width: '30%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${formatUnitPrice(p.unitPrice)}円${p.unit === '入り' ? '' : '/' + p.unit}`}</Typography>
                           <Typography component="span" variant="caption" color="text.secondary" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.storeName}`}</Typography>
                         </Box>
                       </Box>

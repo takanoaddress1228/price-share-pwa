@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from './firebase';
 import { collection, query, orderBy, onSnapshot, doc, setDoc, where } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom'; // 追加
 import {
   Box,
   Button,
@@ -14,10 +15,14 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  IconButton, // 追加
 } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
+import ClearIcon from '@mui/icons-material/Clear'; // 削除アイコン
+import EditIcon from '@mui/icons-material/Edit';   // 編集アイコン
 
 const FavoriteProductsPage = () => {
+  const navigate = useNavigate(); // 追加
   const formatRegistrationDate = (timestamp) => {
     if (!timestamp) return '';
 
@@ -36,6 +41,17 @@ const FavoriteProductsPage = () => {
       return `${months}ヶ月前`;
     } else {
       return '半年前';
+    }
+  };
+
+  const formatUnitPrice = (price) => {
+    if (price === Infinity) return '-';
+    if (price >= 100) {
+      return Math.round(price);
+    } else if (price >= 10) {
+      return price.toFixed(1);
+    } else {
+      return price.toFixed(2);
     }
   };
 
@@ -242,7 +258,7 @@ const FavoriteProductsPage = () => {
                         {/* Volume/Unit */}
                         <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '10%', flexShrink: 0, fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
                         {/* Unit Price */}
-                        <Typography component="span" variant="caption" color="red" sx={{ width: '15%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography>
+                                                <Typography component="span" variant="caption" color="red" sx={{ width: '15%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${formatUnitPrice(product.volume > 0 ? (product.priceExcludingTax / product.volume) : Infinity)}${product.unit === '入り' ? '' : product.unit}`}</Typography>
                       </Box>
 
                       {/* Line 2: Manufacturer, Store Name, Other Button */}
@@ -272,6 +288,33 @@ const FavoriteProductsPage = () => {
                             backgroundColor: 'rgba(0, 0, 0, 0.04)', // ホバー時の背景色
                           },
                         }} onClick={() => handleShowRelatedProducts(product.productName, product.volume)}>最安値</Button>
+                        {/* 編集・削除ボタン */}
+                        {auth.currentUser && product.userId === auth.currentUser.uid && (
+                          <>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/register/${product.id}`);
+                              }}
+                              sx={{ color: '#616161', p: 0.5, ml: 0.5 }} // グレー系の色に変更
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (window.confirm('この商品を削除しますか？')) {
+                                  deleteDoc(doc(db, "products", product.id));
+                                }
+                              }}
+                              sx={{ color: '#616161', p: 0.5 }} // グレー系の色に変更
+                            >
+                              <ClearIcon fontSize="small" />
+                            </IconButton>
+                          </>
+                        )}
                       </Box>
                     </Box>
                   }
@@ -304,7 +347,7 @@ const FavoriteProductsPage = () => {
                         </Box>
                         {/* 2行目: 単価・店名 */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 0.5 }}>
-                          <Typography component="span" variant="body1" color="red" sx={{ width: '35%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.unitPrice.toFixed(2)}円/${p.unit}`}</Typography>
+                          <Typography component="span" variant="body1" color="red" sx={{ width: '35%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${formatUnitPrice(p.unitPrice)}円${p.unit === '入り' ? '' : '/' + p.unit}`}</Typography>
                           <Typography component="span" variant="caption" color="text.secondary" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.storeName}`}</Typography>
                           <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', flexShrink: 0 }}>
                             {formatRegistrationDate(p.createdAt)}
