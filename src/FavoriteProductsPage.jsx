@@ -18,6 +18,27 @@ import {
 import StarIcon from '@mui/icons-material/Star';
 
 const FavoriteProductsPage = () => {
+  const formatRegistrationDate = (timestamp) => {
+    if (!timestamp) return '';
+
+    const registeredDate = timestamp.toDate(); // Firestore TimestampをDateオブジェクトに変換
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - registeredDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 7) {
+      return `${diffDays}日前`;
+    } else if (diffDays <= 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return `${weeks}週前`;
+    } else if (diffDays <= 180) { // 約6ヶ月
+      const months = Math.floor(diffDays / 30);
+      return `${months}ヶ月前`;
+    } else {
+      return '半年前';
+    }
+  };
+
   const [products, setProducts] = useState([]);
   const [userRatingsByProductName, setUserRatingsByProductName] = useState({});
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -155,8 +176,8 @@ const FavoriteProductsPage = () => {
     <Box sx={{ p: 3, pt: '70px' }}>
       <Box sx={{ mb: 2, position: 'sticky', top: 0, zIndex: 100 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'nowrap', mb: 1 }}>
-          <Typography variant="h6" sx={{ whiteSpace: 'nowrap', fontSize: '1.4rem', flexShrink: 0 }}>
-            お気に入り商品一覧
+          <Typography variant="h6" sx={{ whiteSpace: 'nowrap', fontSize: '1.4rem', flexShrink: 0, textAlign: 'center', width: '100%' }}>
+            お気に入り商品
           </Typography>
         </Box>
         <TextField
@@ -177,7 +198,7 @@ const FavoriteProductsPage = () => {
           <Typography variant="body2" color="text.secondary">お気に入りの商品がありません。</Typography>
         ) : (
           filteredProducts.map((product) => (
-            <Paper key={product.id} sx={{ mb: 1, p: 1 }}>
+            <Paper key={product.id} sx={{ mb: 1, p: 1, borderLeft: 'none', borderRight: 'none', boxShadow: 'none' }}>
               <ListItem disablePadding>
                 <ListItemText
                   primary={
@@ -186,7 +207,7 @@ const FavoriteProductsPage = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 0.5, mb: 0.5 }}> {/* mb for spacing between lines */}
                         {/* Star Rating */}
                         <Box
-                          sx={{ cursor: 'pointer', mr: 1, flexShrink: 0 }}
+                          sx={{ cursor: 'pointer', flexShrink: 0 }}
                         >
                           <Rating
                             name={`rating-${product.id}`}
@@ -218,9 +239,9 @@ const FavoriteProductsPage = () => {
                         {/* Price */}
                         <Typography component="span" variant="body1" sx={{ width: 'auto', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.priceExcludingTax}円`}</Typography>
                         {/* Volume/Unit */}
-                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '7%', flexShrink: 0, fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '10%', flexShrink: 0, fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
                         {/* Unit Price */}
-                        <Typography component="span" variant="caption" color="red" sx={{ width: '10%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography>
+                        <Typography component="span" variant="caption" color="red" sx={{ width: '15%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography>
                       </Box>
 
                       {/* Line 2: Manufacturer, Store Name, Other Button */}
@@ -237,6 +258,9 @@ const FavoriteProductsPage = () => {
                           textOverflow: 'ellipsis',
                           mr: 1
                         }}>{`${product.storeName}`}</Typography>
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', flexShrink: 0 }}>
+                          {formatRegistrationDate(product.createdAt)}
+                        </Typography>
                         {/* 最安値 Button (gray styling) */}
                         <Button variant="outlined" size="small" sx={{
                           width: 60, height: 36, minWidth: 36, flexShrink: 0,
@@ -279,8 +303,11 @@ const FavoriteProductsPage = () => {
                         </Box>
                         {/* 2行目: 単価・店名 */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 0.5 }}>
-                          <Typography component="span" variant="body1" color="red" sx={{ width: '30%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.unitPrice.toFixed(2)}円/${p.unit}`}</Typography>
+                          <Typography component="span" variant="body1" color="red" sx={{ width: '35%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.unitPrice.toFixed(2)}円/${p.unit}`}</Typography>
                           <Typography component="span" variant="caption" color="text.secondary" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.storeName}`}</Typography>
+                          <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', flexShrink: 0 }}>
+                            {formatRegistrationDate(p.createdAt)}
+                          </Typography>
                         </Box>
                       </Box>
                     }

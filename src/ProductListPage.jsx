@@ -18,6 +18,27 @@ import {
 import StarIcon from '@mui/icons-material/Star'; // StarIconをインポート
 
 const ProductListPage = () => {
+  const formatRegistrationDate = (timestamp) => {
+    if (!timestamp) return '';
+
+    const registeredDate = timestamp.toDate(); // Firestore TimestampをDateオブジェクトに変換
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - registeredDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 7) {
+      return `${diffDays}日前`;
+    } else if (diffDays <= 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return `${weeks}週前`;
+    } else if (diffDays <= 180) { // 約6ヶ月
+      const months = Math.floor(diffDays / 30);
+      return `${months}ヶ月前`;
+    } else {
+      return '半年前';
+    }
+  };
+
   const [products, setProducts] = useState([]);
   const [userRatingsByProductName, setUserRatingsByProductName] = useState({});
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -281,8 +302,33 @@ const ProductListPage = () => {
           size="small"
           value={searchKeyword}
           onChange={(e) => setSearchKeyword(e.target.value)}
-          placeholder="商品名、または星評価 (0-3)"
-          sx={{ width: '100%' }} // 幅を100%に
+          // placeholder="商品名、または星評価 (0-3)" // 削除
+          sx={{
+            width: '100%',
+            // デフォルトの枠線色 (グレー系)
+            '& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#bdbdbd', // 薄いグレー
+            },
+            // フォーカス時の枠線色 (ワインレッド系)
+            '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#B22222', // ワインレッド
+            },
+            // ホバー時の枠線色 (少し濃いグレー)
+            '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#757575', // 通常のグレー
+            },
+          }}
+          InputLabelProps={{
+            style: {
+              color: '#616161', // ラベルの初期色をグレーに固定
+            },
+            sx: {
+              // フローティングラベルがフォーカスされた時の色 (ワインレッド系)
+              '&.Mui-focused': {
+                color: '#B22222', // ワインレッド
+              },
+            },
+          }}
         />
       </Box>
       </Box>
@@ -308,7 +354,7 @@ const ProductListPage = () => {
                             setDialogRatingValue(userRatingsByProductName[product.productName] || 0);
                             setOpenRatingDialog(true);
                           }}
-                          sx={{ cursor: 'pointer', mr: 1, flexShrink: 0 }}
+                          sx={{ cursor: 'pointer', flexShrink: 0 }}
                         >
                           <Rating
                             name={`rating-${product.id}`}
@@ -323,9 +369,9 @@ const ProductListPage = () => {
                         {/* Price */}
                         <Typography component="span" variant="body1" sx={{ width: 'auto', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.priceExcludingTax}円`}</Typography>
                         {/* Volume/Unit */}
-                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '7%', flexShrink: 0, fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '10%', flexShrink: 0, fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
                         {/* Unit Price */}
-                        <Typography component="span" variant="caption" color="red" sx={{ width: '10%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography>
+                        <Typography component="span" variant="caption" color="red" sx={{ width: '12%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.volume > 0 ? (product.priceExcludingTax / product.volume).toFixed(2) : '-'}${product.unit}`}</Typography>
                       </Box>
 
                       {/* Line 2: Manufacturer, Store Name, Other Button, Hidden Button */}
@@ -342,6 +388,9 @@ const ProductListPage = () => {
                           textOverflow: 'ellipsis',
                           mr: 1
                         }}>{`${product.storeName}`}</Typography>
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', flexShrink: 0 }}>
+                          {formatRegistrationDate(product.createdAt)}
+                        </Typography>
                         {/* Other Button */}
                         <Button variant="outlined" size="small" sx={{
                           width: 60, height: 36, minWidth: 36, flexShrink: 0,
