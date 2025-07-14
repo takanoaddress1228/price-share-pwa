@@ -362,6 +362,7 @@ const ProductListPage = () => {
                             max={3}
                             size="small"
                             readOnly
+                            sx={{ '& .MuiRating-icon': { fontSize: '0.7rem' } }} // アイコンのサイズをさらに小さくする
                           />
                         </Box>
                         {/* Product Name */}

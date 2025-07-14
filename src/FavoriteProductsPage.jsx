@@ -232,6 +232,7 @@ const FavoriteProductsPage = () => {
                                 alert('ログインして評価してください。');
                               }
                             }}
+                            sx={{ '& .MuiRating-icon': { fontSize: '0.7rem' } }} // アイコンのサイズをさらに小さくする
                           />
                         </Box>
                         {/* Product Name */}
