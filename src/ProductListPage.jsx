@@ -56,6 +56,19 @@ const ProductListPage = () => {
     }
   };
 
+  const formatSpecialPriceDate = (timestamp, type) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    if (type === '日替り') {
+      return `(${month}/${day})`;
+    } else if (type === '月間特売') {
+      return `(~${month}/${day})`;
+    }
+    return '';
+  };
+
   const [products, setProducts] = useState([]);
   const [userRatingsByProductName, setUserRatingsByProductName] = useState({});
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -392,7 +405,12 @@ const ProductListPage = () => {
                         {/* Product Name */}
                         <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.productName}`}</Typography>
                         {/* Price */}
-                        <Typography component="span" variant="body1" sx={{ width: 'auto', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.priceExcludingTax}円`}</Typography>
+                        <Typography component="span" variant="body1" sx={{ width: 'auto', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: product.priceType === '通常' ? 'text.primary' : '#B22222' }}>{`${product.priceExcludingTax}円`}</Typography>
+                        {product.priceType !== '通常' && (
+                          <Typography component="span" variant="caption" sx={{ color: product.priceType === '日替り' ? '#B22222' : '#FF8C00', fontSize: '0.7rem', ml: 0.5 }}>
+                            {formatSpecialPriceDate(product.priceType === '日替り' ? product.startDate : product.endDate, product.priceType)}
+                        </Typography>
+                        )}
                         {/* Volume/Unit */}
                         <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '10%', flexShrink: 0, fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
                         {/* Unit Price */}
@@ -505,6 +523,11 @@ const ProductListPage = () => {
                           <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.productName}`}</Typography>
                           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                             <Typography component="span" variant="body1" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.priceExcludingTax}円`}</Typography>
+                            {p.priceType !== '通常' && ( // 日付表示を追加
+                              <Typography component="span" variant="caption" sx={{ color: p.priceType === '日替り' ? '#B22222' : '#FF8C00', fontSize: '0.7rem', ml: 0.5 }}>
+                                {formatSpecialPriceDate(p.priceType === '日替り' ? p.startDate : p.endDate, p.priceType)}
+                              </Typography>
+                            )}
                             <Typography component="span" variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${p.volume}${p.unit}`}</Typography>
                           </Box>
                         </Box>
