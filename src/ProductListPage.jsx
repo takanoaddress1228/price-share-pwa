@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { auth, db } from './firebase';
 import { collection, query, orderBy, onSnapshot, doc, setDoc, getDoc, deleteDoc, where } from 'firebase/firestore';
-import { useLocation, useNavigate } from 'react-router-dom'; // useLocation と useNavigate をまとめてインポート
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -15,15 +15,19 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  IconButton, // 追加
+  IconButton,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
-import ClearIcon from '@mui/icons-material/Clear'; // 削除アイコン
-import EditIcon from '@mui/icons-material/Edit';   // 編集アイコン
+import ClearIcon from '@mui/icons-material/Clear';
+import EditIcon from '@mui/icons-material/Edit';
 
 const ProductListPage = () => {
   const navigate = useNavigate();
   const location = useLocation(); // useLocation も追加
+
   const formatRegistrationDate = (timestamp) => {
     if (!timestamp) return '';
 
@@ -45,14 +49,14 @@ const ProductListPage = () => {
     }
   };
 
-  const formatUnitPrice = (price) => {
+  const formatUnitPrice = (price, unit) => {
     if (price === Infinity) return '-';
     if (price >= 100) {
-      return Math.round(price);
+      return `${Math.round(price)}円/${unit}`;
     } else if (price >= 10) {
-      return price.toFixed(1);
+      return `${price.toFixed(1)}円/${unit}`;
     } else {
-      return price.toFixed(2);
+      return `${price.toFixed(2)}円/${unit}`;
     }
   };
 
@@ -104,14 +108,45 @@ const ProductListPage = () => {
 
   // 商品データをリアルタイムで取得
   useEffect(() => {
-    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-    const unsubscribeProducts = onSnapshot(q, async (snapshot) => {
-      const productsData = [];
-      for (const docSnapshot of snapshot.docs) {
-        const product = { id: docSnapshot.id, ...docSnapshot.data() };
-        productsData.push(product);
+    const q = query(collection(db, "prices"), orderBy("createdAt", "desc")); // pricesコレクションから取得
+    const unsubscribePrices = onSnapshot(q, async (snapshot) => {
+      const pricesData = [];
+      const productDefinitionIds = new Set();
+
+      snapshot.docs.forEach(docSnap => {
+        const price = { id: docSnap.id, ...docSnap.data() };
+        pricesData.push(price);
+        if (price.productDefinitionId) {
+          productDefinitionIds.add(price.productDefinitionId);
+        }
+      });
+
+      const productDefinitionsMap = new Map();
+      if (productDefinitionIds.size > 0) {
+        // product_definitionsをバッチで取得
+        const definitionQueries = Array.from(productDefinitionIds).map(id => getDoc(doc(db, "product_definitions", id)));
+        const definitionSnapshots = await Promise.all(definitionQueries);
+        definitionSnapshots.forEach(docSnap => {
+          if (docSnap.exists()) {
+            productDefinitionsMap.set(docSnap.id, docSnap.data());
+          }
+        });
       }
-      setProducts(productsData);
+
+      const combinedProducts = pricesData.map(price => {
+        const definition = productDefinitionsMap.get(price.productDefinitionId);
+        return {
+          ...price,
+          productName: definition?.productName || price.productName || '',
+          manufacturer: definition?.manufacturer || price.manufacturer || '',
+          volume: definition?.volume || price.volume || '',
+          unit: definition?.unit || price.unit || 'g',
+          largeCategory: definition?.largeCategory || price.largeCategory || '',
+          mediumCategory: definition?.mediumCategory || price.mediumCategory || '',
+          smallCategory: definition?.smallCategory || price.smallCategory || '',
+        };
+      });
+      setProducts(combinedProducts);
     });
 
     // ユーザーごとの商品名評価をリアルタイムで取得
@@ -139,7 +174,7 @@ const ProductListPage = () => {
 
     // クリーンアップ関数
     return () => {
-      unsubscribeProducts();
+      unsubscribePrices();
       if (unsubscribeProductNameRatings) {
         unsubscribeProductNameRatings();
       }
@@ -195,7 +230,7 @@ const ProductListPage = () => {
   };
 
   // 商品リストを検索キーワードでフィルタリング
-  const filteredProducts = (() => {
+  const filteredProducts = useMemo(() => {
     let baseProducts = products;
 
     // 非表示にした商品表示の場合
@@ -206,11 +241,8 @@ const ProductListPage = () => {
       baseProducts = products.filter(product => !hiddenProductIds.includes(product.id));
     }
 
-    // 検索キーワードと星評価によるフィルタリング
+    // 検索キーワードによるフィルタリング
     const keyword = searchKeyword.toLowerCase();
-    const searchRating = parseInt(keyword, 10); // キーワードを数値に変換
-    const isRatingSearch = !isNaN(searchRating) && searchRating >= 0 && searchRating <= 3; // 0から3の数値で、かつ数値であるか
-
     let tempFilteredProducts = baseProducts.filter(product => {
       const productNameLower = product.productName.toLowerCase();
       const manufacturerLower = product.manufacturer.toLowerCase();
@@ -221,25 +253,18 @@ const ProductListPage = () => {
       const manufacturerHiragana = toHiragana(manufacturerLower);
       const manufacturerKatakana = toHalfWidthKatakana(manufacturerLower);
 
-      const tagMatch = (product.tags || []).some(tag => tag.toLowerCase().includes(keyword));
-
       return (
-        (isRatingSearch && (userRatingsByProductName[product.productName] || 0) === searchRating) || // 星評価が一致する場合
-        (!isRatingSearch && ( // 星評価検索ではない場合、既存のキーワード検索を実行
-          productNameLower.includes(keyword) ||
-          manufacturerLower.includes(keyword) ||
-          productNameHiragana.includes(keyword) ||
-          productNameKatakana.includes(keyword) ||
-          manufacturerHiragana.includes(keyword) ||
-          manufacturerKatakana.includes(keyword) ||
-          tagMatch // タグ検索を追加
-        ))
+        productNameLower.includes(keyword) ||
+        manufacturerLower.includes(keyword) ||
+        productNameHiragana.includes(keyword) ||
+        productNameKatakana.includes(keyword) ||
+        manufacturerHiragana.includes(keyword) ||
+        manufacturerKatakana.includes(keyword)
       );
     });
 
-    // 検索キーワードが入力されている場合（星評価検索を除く）に、
-    // 同じ商品名の中で単価が最も安いものだけを表示する
-    if (searchKeyword.trim() !== '' && !isRatingSearch) {
+    // 検索キーワードが入力されている場合に、同じ商品名の中で単価が最も安いものだけを表示する
+    if (searchKeyword.trim() !== '') {
       const cheapestPerProductNameMap = new Map();
       tempFilteredProducts.forEach(product => {
         const unitPrice = product.volume > 0 ? (product.priceExcludingTax / product.volume) : Infinity;
@@ -250,13 +275,11 @@ const ProductListPage = () => {
           cheapestPerProductNameMap.set(product.productName, productWithUnitPrice);
         }
       });
-      // Convert map values back to an array and sort them by unitPrice
       return Array.from(cheapestPerProductNameMap.values()).sort((a, b) => a.unitPrice - b.unitPrice);
     }
 
-    // 星評価検索の場合、または検索キーワードが空の場合、そのまま返す
     return tempFilteredProducts;
-  })();
+  }, [products, searchKeyword, hiddenProductIds, showHiddenProductsView]);
 
   return (
     <Box sx={{ p: 3, pt: '70px' }}>
@@ -330,12 +353,12 @@ const ProductListPage = () => {
         </Box>
         {/* 検索フィールドをタイトルの下に配置 */}
         <TextField
-          label={showHiddenProductsView ? "非表示にした商品を検索" : "商品を検索"}
+          label="商品名で検索"
           variant="outlined"
           size="small"
           value={searchKeyword}
           onChange={(e) => setSearchKeyword(e.target.value)}
-          placeholder="商品名、星評価 (0-3), タグ" // タグを追加
+          placeholder="商品名を入力"
           sx={{
             width: '100%',
             // デフォルトの枠線色 (グレー系)
@@ -370,8 +393,6 @@ const ProductListPage = () => {
       </Box>
       </Box>
 
-      
-
       <List>
         {filteredProducts.length === 0 ? (
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>まだ商品が登録されていません。</Typography>
@@ -404,23 +425,23 @@ const ProductListPage = () => {
                         </Box>
                         {/* Product Name */}
                         <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.productName}`}</Typography>
+                        {/* Volume/Unit */}
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '10%', flexShrink: 0, fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
                         {/* Price */}
-                        <Typography component="span" variant="body1" sx={{ width: 'auto', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: product.priceType === '通常' ? 'text.primary' : '#B22222' }}>{`${product.priceExcludingTax}円`}</Typography>
+                        <Typography component="span" variant="body1" sx={{ width: 'auto', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: product.priceType === '通常' ? 'text.primary' : (product.priceType === '日替り' ? '#B22222' : '#FF8C00') }}>{`${product.priceExcludingTax}円`}</Typography>
                         {product.priceType !== '通常' && (
                           <Typography component="span" variant="caption" sx={{ color: product.priceType === '日替り' ? '#B22222' : '#FF8C00', fontSize: '0.7rem', ml: 0.5 }}>
                             {formatSpecialPriceDate(product.priceType === '日替り' ? product.startDate : product.endDate, product.priceType)}
                         </Typography>
                         )}
-                        {/* Volume/Unit */}
-                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '10%', flexShrink: 0, fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
                         {/* Unit Price */}
-                        <Typography component="span" variant="caption" color="red" sx={{ width: '12%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${formatUnitPrice(product.volume > 0 ? (product.priceExcludingTax / product.volume) : Infinity)}${product.unit === '入り' ? '' : product.unit}`}</Typography>
+                        <Typography component="span" variant="caption" color="red" sx={{ width: '12%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${formatUnitPrice(product.volume > 0 ? (product.priceExcludingTax / product.volume) : Infinity, product.unit)}`}</Typography>
                       </Box>
 
                       {/* Line 2: Manufacturer, Store Name, Other Button, Hidden Button */}
                       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 0.5 }}>
                         {/* Manufacturer */}
-                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '20%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${product.manufacturer}`}</Typography>
+                        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '20%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.manufacturer}`}</Typography>
                         {/* Store Name */}
                         <Typography component="span" variant="caption" color="text.secondary" sx={{
                           flexGrow: 1,
@@ -487,7 +508,7 @@ const ProductListPage = () => {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (window.confirm('この商品を削除しますか？')) {
-                                  deleteDoc(doc(db, "products", product.id));
+                                  deleteDoc(doc(db, "prices", product.id));
                                 }
                               }}
                               sx={{ color: '#616161', p: 0.5 }} // グレー系の色に変更
@@ -513,8 +534,8 @@ const ProductListPage = () => {
             {relatedProducts.length === 0 ? (
               <Typography variant="body2" color="text.secondary">関連商品はありません。</Typography>
             ) : (
-              relatedProducts.map((p, index) => (
-                <ListItem key={index} disablePadding>
+              relatedProducts.map((p) => (
+                <ListItem key={p.id} disablePadding>
                   <ListItemText
                     primary={
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}> {/* 2行表示のための変更 */}
@@ -522,7 +543,7 @@ const ProductListPage = () => {
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 0.5 }}>
                           <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.productName}`}</Typography>
                           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                            <Typography component="span" variant="body1" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.priceExcludingTax}円`}</Typography>
+                            <Typography component="span" variant="body1" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: p.priceType === '通常' ? 'text.primary' : (p.priceType === '日替り' ? '#B22222' : '#FF8C00') }}>{`${p.priceExcludingTax}円`}</Typography>
                             {p.priceType !== '通常' && ( // 日付表示を追加
                               <Typography component="span" variant="caption" sx={{ color: p.priceType === '日替り' ? '#B22222' : '#FF8C00', fontSize: '0.7rem', ml: 0.5 }}>
                                 {formatSpecialPriceDate(p.priceType === '日替り' ? p.startDate : p.endDate, p.priceType)}
@@ -533,8 +554,11 @@ const ProductListPage = () => {
                         </Box>
                         {/* 2行目: 単価・店名 */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 0.5 }}>
-                          <Typography component="span" variant="body1" color="red" sx={{ width: '30%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${formatUnitPrice(p.unitPrice)}円${p.unit === '入り' ? '' : '/' + p.unit}`}</Typography>
+                          <Typography component="span" variant="body1" color="red" sx={{ width: '30%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${formatUnitPrice(p.unitPrice, p.unit)}`}</Typography>
                           <Typography component="span" variant="caption" color="text.secondary" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${p.storeName}`}</Typography>
+                          <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', flexShrink: 0 }}>
+                            {formatRegistrationDate(p.createdAt)}
+                          </Typography>
                         </Box>
                       </Box>
                     }
