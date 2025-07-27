@@ -109,6 +109,9 @@ const Dashboard = () => {
               },
             }}
           >
+            <MenuItem onClick={() => { handleMenuClose(); navigate('/register'); }}>
+              ホーム
+            </MenuItem>
             <MenuItem onClick={() => { handleMenuClose(); navigate('/settings'); }}>
               設定・お問い合わせ
             </MenuItem>

@@ -22,6 +22,11 @@ const SettingsAndInquiryPage = () => {
         設定・お問い合わせ
       </Typography>
 
+      {/* 戻るボタンを追加 */}
+      <Button variant="outlined" onClick={() => navigate('/register')} sx={{ mt: 2, mb: 4 }}>
+        メイン画面に戻る
+      </Button>
+
       <Box sx={{ mt: 4 }}>
         <Typography variant="h6" gutterBottom>
           お問い合わせ
