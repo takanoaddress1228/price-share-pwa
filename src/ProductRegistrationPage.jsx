@@ -27,6 +27,7 @@ import {
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toHalfWidthKatakana, toHiragana } from './utils/stringUtils'; // 追加
 
 const ProductRegistrationPage = () => {
   const navigate = useNavigate();
@@ -48,8 +49,6 @@ const ProductRegistrationPage = () => {
   };
 
   const [product, setProduct] = useState(initialProductState);
-  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
-  const [productDataToConfirm, setProductDataToConfirm] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [productIdToEdit, setProductIdToEdit] = useState(null);
   const [largeCategories, setLargeCategories] = useState([]);
@@ -58,27 +57,7 @@ const ProductRegistrationPage = () => {
 
   const { productId: urlPriceId } = useParams();
 
-// ひらがなをカタカナに変換する関数
-const toHalfWidthKatakana = (str) => {
-  return str.replace(/./g, (char) => {
-    const code = char.charCodeAt(0);
-    if (code >= 0x3041 && code <= 0x3093) { // ひらがな
-      return String.fromCharCode(code + 0x60);
-    }
-    return char;
-  });
-};
-
-// カタカナをひらがなに変換する関数
-const toHiragana = (str) => {
-  return str.replace(/./g, (char) => {
-    const code = char.charCodeAt(0);
-    if (code >= 0x30a1 && code <= 0x30f6) { // カタカナ
-      return String.fromCharCode(code - 0x60);
-    }
-    return char;
-  });
-};
+// toHalfWidthKatakana 関数と toHiragana 関数は src/utils/stringUtils.js に移動されました
 
 useEffect(() => {
   const fetchCategories = async () => {
@@ -246,14 +225,7 @@ const handleProductSelect = (event, value) => {
   }
 };
 
-const handleLogout = async () => {
-  try {
-    await signOut(auth);
-    navigate('/price-share-pwa/login');
-  } catch (error) {
-    console.error("ログアウトエラー:", error);
-  }
-};
+
 
 const handleSubmit = (e) => {
   e.preventDefault();
@@ -276,11 +248,13 @@ const handleSubmit = (e) => {
     alert('新しい商品を登録する場合は、すべての商品情報を入力してください。');
     return;
   }
-  setShowConfirmationDialog(true);
+  // setShowConfirmationDialog(true); // 確認ダイアログを削除するためコメントアウトまたは削除
+  // handleConfirmActionを直接呼び出す
+  handleConfirmAction();
 };
 
 const handleConfirmAction = async () => {
-  setShowConfirmationDialog(false);
+  // setShowConfirmationDialog(false); // 確認ダイアログを削除するためコメントアウトまたは削除
   try {
     if (isEditMode && productIdToEdit) {
       // === 古い形式のデータを更新する場合 ===
@@ -410,10 +384,6 @@ alert('処理に失敗しました。');
 }
 };
 
-const handleCancelAction = () => {
-  setShowConfirmationDialog(false);
-};
-
 const handleClearForm = () => {
   setProduct(initialProductState);
   setIsProductSelected(false);
@@ -428,18 +398,6 @@ return (
       <Typography variant="h5" component="h1">
         {isEditMode ? '商品を編集' : '商品登録'}
       </Typography>
-      <Button
-        variant="outlined"
-        sx={{
-          color: '#616161',
-          py: 1.5,
-          borderColor: '#bdbdbd',
-          '&:hover': { borderColor: '#757575' },
-        }}
-        onClick={handleLogout}
-      >
-        ログアウト
-      </Button>
     </Box>
     <Paper elevation={2} sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
       <Box component="form" onSubmit={handleSubmit}>
@@ -543,11 +501,11 @@ return (
             >
               <FormControlLabel value="通常" control={<Radio />} label="通常価格" />
               <FormControlLabel value="日替り" control={<Radio />} label="日替り価格" />
-              <FormControlLabel value="月間特売" control={<Radio />} label="月間特売" />
+              <FormControlLabel value="期間特売" control={<Radio />} label="期間特売" />
             </RadioGroup>
           </FormControl>
 
-          {(product.priceType === '日替り' || product.priceType === '月間特売') && (
+          {(product.priceType === '日替り' || product.priceType === '期間特売') && (
             <>
               <TextField
                 fullWidth
@@ -562,7 +520,7 @@ return (
                   shrink: true,
                 }}
               />
-              {product.priceType === '月間特売' && (
+              {product.priceType === '期間特売' && (
                 <TextField
                   fullWidth
                   label="終了日"
@@ -780,59 +738,6 @@ return (
 </Button>
 </Box>
 </Paper>
-
-{/* 確認ダイアログ */}
-<Dialog
-  open={showConfirmationDialog}
-  onClose={handleCancelAction}
-  aria-labelledby="confirmation-dialog-title"
-  aria-describedby="confirmation-dialog-description"
->
-  <DialogTitle id="confirmation-dialog-title">{"この内容で登録しますか？"}</DialogTitle>
-  <DialogContent>
-    {productDataToConfirm && (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Typography variant="body2"><b>メーカー:</b> {productDataToConfirm.manufacturer}</Typography>
-        <Typography variant="body2"><b>商品名:</b> {productDataToConfirm.productName}</Typography>
-        <Typography variant="body2"><b>税抜き価格:</b> {productDataToConfirm.priceExcludingTax}円</Typography>
-        <Typography variant="body2"><b>内容量:</b> {productDataToConfirm.volume}{productDataToConfirm.unit}</Typography>
-        <Typography variant="body2"><b>店名:</b> {productDataToConfirm.storeName}</Typography>
-      </Box>
-    )}
-  </DialogContent>
-  <DialogActions sx={{ justifyContent: 'center' }}>
-    <Button
-      onClick={handleConfirmAction}
-      variant="contained"
-      sx={{
-        minWidth: '150px',
-        py: 1.5,
-        fontSize: '1.1rem',
-        backgroundColor: '#2196F3',
-        '&:hover': {
-          backgroundColor: '#1976D2',
-        },
-        mr: 2,
-      }}
-      autoFocus
-    >
-      {isEditMode ? '更新する' : '登録する'}
-    </Button>
-    <Button
-      onClick={handleCancelAction}
-      variant="outlined"
-      sx={{
-        color: '#616161',
-        borderColor: '#bdbdbd',
-        '&:hover': {
-          borderColor: '#757575',
-        },
-      }}
-    >
-      やり直す
-    </Button>
-  </DialogActions>
-</Dialog>
 </Box>
 );
 };

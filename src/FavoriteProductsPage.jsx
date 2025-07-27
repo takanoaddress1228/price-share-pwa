@@ -20,6 +20,8 @@ import {
 import StarIcon from '@mui/icons-material/Star';
 import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
+import { toHalfWidthKatakana, toHiragana } from './utils/stringUtils'; // 追加
+import ProductListItem from './components/ProductListItem'; // 追加
 
 const FavoriteProductsPage = () => {
   const navigate = useNavigate();
@@ -61,9 +63,9 @@ const FavoriteProductsPage = () => {
     const month = date.getMonth() + 1;
     const day = date.getDate();
     if (type === '日替り') {
-      return `(${month}/${day})`;
+      return `${month}/${day}`;
     } else if (type === '月間特売') {
-      return `(~${month}/${day})`;
+      return `~${month}/${day}`;
     }
     return '';
   };
@@ -79,27 +81,7 @@ const FavoriteProductsPage = () => {
   const [dialogRatingValue, setDialogRatingValue] = useState(0); // 評価ダイアログの評価値
 
 
-  // ひらがなをカタカナに変換する関数
-  const toHalfWidthKatakana = (str) => {
-    return str.replace(/./g, (char) => {
-      const code = char.charCodeAt(0);
-      if (code >= 0x3041 && code <= 0x3093) { // ひらがな
-        return String.fromCharCode(code + 0x60);
-      }
-      return char;
-    });
-  };
-
-  // カタカナをひらがなに変換する関数
-  const toHiragana = (str) => {
-    return str.replace(/./g, (char) => {
-      const code = char.charCodeAt(0);
-      if (code >= 0x30a1 && code <= 0x30f6) { // カタカナ
-        return String.fromCharCode(code - 0x60);
-      }
-      return char;
-    });
-  };
+  // toHalfWidthKatakana 関数と toHiragana 関数は src/utils/stringUtils.js に移動されました
 
   // 商品データをリアルタイムで取得
   useEffect(() => {
@@ -281,105 +263,18 @@ const FavoriteProductsPage = () => {
               <ListItem disablePadding>
                 <ListItemText
                   primary={
-                    <Box> {/* Outer Box for two lines */}
-  {/* Line 1: Star Rating, Product Name, Volume/Unit, Price, Unit Price */}
-  <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 0.5, mb: 0.5 }}> {/* mb for spacing between lines */}
-    {/* Star Rating */}
-    <Box sx={{ cursor: 'pointer', flexShrink: 0 }}>
-      <Rating
-        name={`rating-${product.id}`}
-        value={userRatingsByProductName[product.productName] || 0}
-        max={3}
-        size="small"
-        onChange={(event, newValue) => {
-  if (auth.currentUser) {
-    setCurrentProductForRating(product); // 評価対象の商品を設定
-    setDialogRatingValue(newValue); // ダイアログに表示する評価値を設定
-    setOpenRatingDialog(true); // 評価ダイアログを開く
-  } else {
-    alert('ログインして評価してください。');
-  }
-}}
-
-        sx={{ '& .MuiRating-icon': { fontSize: '0.7rem' } }} // アイコンのサイズをさらに小さくする
-      />
-    </Box>
-    {/* Product Name */}
-    <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-      {`${product.productName}`}
-    </Typography>
-    {/* Volume/Unit */}
-    <Typography component="span" variant="caption" color="text.secondary" sx={{ flexShrink: 0, fontSize: '0.7rem', minWidth: '50px', textAlign: 'right' }}>
-      {`${product.volume}${product.unit}`}
-    </Typography>
-    {/* Price */}
-    <Typography component="span" variant="body1" sx={{ flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: product.priceType === '通常' ? 'text.primary' : (product.priceType === '日替り' ? '#B22222' : '#FF8C00'), minWidth: '60px', textAlign: 'right' }}>
-      {`${product.priceExcludingTax}円`}
-    </Typography>
-    {/* Unit Price */}
-    <Typography component="span" variant="caption" color="red" sx={{ flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem', minWidth: '70px', textAlign: 'right' }}>
-      {`${formatUnitPrice(product.volume > 0 ? (product.priceExcludingTax / product.volume) : Infinity, product.unit)}`}
-    </Typography>
-  </Box>
-
-  {/* Line 2: Manufacturer, Store Name, Other Button */}
-  <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 0.5 }}>
-    {/* Manufacturer */}
-    <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '20%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>
-      {`${product.manufacturer}`}
-    </Typography>
-    {/* Store Name */}
-    <Typography component="span" variant="caption" color="text.secondary" sx={{ flexGrow: 1,
-    flexShrink: 0,
-    fontSize: '0.7rem',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    mr: 1
-  }}>{`${product.storeName}`}</Typography>
-<Typography component="span"
-  variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', flexShrink: 0 }}>
-  {formatRegistrationDate(product.createdAt)}
-</Typography>
-{/* 最安値 Button (gray styling) */}
-<Button variant="outlined" size="small" sx={{
-  width: 60, height: 36, minWidth: 36, flexShrink: 0,
-  color: '#757575', // グレー系の色
-  borderColor: '#bdbdbd', // グレー系の色
-  '&:hover': {
-    borderColor: '#616161', // ホバー時の色を少し濃く
-    backgroundColor: 'rgba(0, 0, 0, 0.04)', // ホバー時の背景色
-  },
-}} onClick={() => handleShowRelatedProducts(product.productName, product.volume)}>最安値</Button>
-{/* 編集・削除ボタン */}
-{auth.currentUser && product.userId === auth.currentUser.uid && (
-  <>
-    <IconButton
-      size="small"
-      onClick={(e) => {
-        e.stopPropagation();
-        navigate(`/register/${product.id}`);
-      }}
-      sx={{ color: '#616161', p: 0.5, ml: 0.5 }} // グレー系の色に変更
-    >
-      <EditIcon fontSize="small" />
-    </IconButton>
-    <IconButton
-      size="small"
-      onClick={(e) => {
-        e.stopPropagation();
-        if (window.confirm('この商品を削除しますか？')) {
-          deleteDoc(doc(db, "products", product.id));
-        }
-      }}
-      sx={{ color: '#616161', p: 0.5 }} // グレー系の色に変更
-    >
-      <ClearIcon fontSize="small" />
-    </IconButton>
-  </>
-)}
-</Box>
-</Box>
+                    <ProductListItem
+                      product={product}
+                      userRatingsByProductName={userRatingsByProductName}
+                      formatUnitPrice={formatUnitPrice}
+                      formatRegistrationDate={formatRegistrationDate}
+                      formatSpecialPriceDate={formatSpecialPriceDate}
+                      handleShowRelatedProducts={handleShowRelatedProducts}
+                      navigate={navigate}
+                      setCurrentProductForRating={setCurrentProductForRating}
+                      setDialogRatingValue={setDialogRatingValue}
+                      setOpenRatingDialog={setOpenRatingDialog}
+                    />
                   }
                 />
               </ListItem>

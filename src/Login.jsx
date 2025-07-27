@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { auth } from './firebase';
 import {
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect, // signInWithPopup から変更
   signInAnonymously,
 } from 'firebase/auth';
 import {
@@ -21,7 +21,7 @@ const Login = () => {
     setError('');
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithRedirect(auth, provider); // signInWithPopup から変更
     } catch (err) {
       setError(err.message);
     }

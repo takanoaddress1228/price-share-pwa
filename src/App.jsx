@@ -9,6 +9,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './Dashboard';
 // ログイン画面のコンポーネント
 import Login from './Login';
+// 設定・お問い合わせ画面のコンポーネント
+import SettingsAndInquiryPage from './SettingsAndInquiryPage';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -38,6 +40,7 @@ function App() {
       <BrowserRouter basename="/price-share-pwa"> {/* ここにbasenameを追加 */}
         <Routes>
           <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+          <Route path="/settings" element={user ? <SettingsAndInquiryPage /> : <Navigate to="/login" />} /> {/* 追加 */}
           <Route path="/*" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         </Routes>
       </BrowserRouter>
