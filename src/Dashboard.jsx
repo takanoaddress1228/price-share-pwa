@@ -83,7 +83,7 @@ const Dashboard = () => {
       <AppBar position="fixed" sx={{ top: 0, bottom: 'auto', backgroundColor: '#fff', boxShadow: 'none', borderBottom: '1px solid #e0e0e0' }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: '#333' }}>
-            Price Share PWA
+            価格登録アプリ
           </Typography>
           <IconButton
             aria-label="more"

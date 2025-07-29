@@ -5,42 +5,51 @@ import EditIcon from '@mui/icons-material/Edit';
 import { auth, db } from '../firebase'; // firebaseをインポート
 import { doc, deleteDoc } from 'firebase/firestore'; // deleteDocをインポート
 
-const ProductListItem = ({ product, userRatingsByProductName, formatUnitPrice, formatRegistrationDate, formatSpecialPriceDate, handleShowRelatedProducts, navigate, isHiddenView = false, handleToggleHiddenStatus }) => {
+const ProductListItem = ({ product, userRatingsByProductName, formatUnitPrice, formatRegistrationDate, formatSpecialPriceDate, handleShowRelatedProducts, navigate, isHiddenView = false, handleToggleHiddenStatus, setCurrentProductForRating, setDialogRatingValue, setOpenRatingDialog }) => {
   return (
     <Box> {/* Outer Box for two lines */}
       {/* Line 1: Star Rating, Product Name, Price, Volume/Unit, Unit Price */}
-      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 0.5, mb: 0.5 }}> {/* mb for spacing between lines */}
-        {/* Star Rating */}
-        <Box
-          onClick={() => {
-            // setCurrentProductForRating(product); // ProductListPageから渡されないためコメントアウト
-            // setDialogRatingValue(userRatingsByProductName[product.productName] || 0); // ProductListPageから渡されないためコメントアウト
-            // setOpenRatingDialog(true); // ProductListPageから渡されないためコメントアウト
-          }}
-          sx={{ cursor: 'pointer', flexShrink: 0 }}
-        >
-          <Rating
-            name={`rating-${product.id}`}
-            value={userRatingsByProductName[product.productName] || 0}
-            max={3}
-            size="small"
-            readOnly
-            sx={{ '& .MuiRating-icon': { fontSize: '0.7rem' } }} // アイコンのサイズをさらに小さくする
-          />
+      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 0.5, mb: 0.5, justifyContent: 'space-between' }}> {/* mb for spacing between lines */}
+        <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 1, minWidth: 0 }}> {/* Group 1: Star Rating + Product Name */}
+          {/* Star Rating */}
+          <Box
+            onClick={() => {
+              setCurrentProductForRating(product);
+              setDialogRatingValue(userRatingsByProductName[product.productName] || 0);
+              setOpenRatingDialog(true);
+            }}
+            sx={{ cursor: 'pointer', flexShrink: 0 }}
+          >
+            <Rating
+              name={`rating-${product.id}`}
+              value={userRatingsByProductName[product.productName] || 0}
+              max={3}
+              size="small"
+              readOnly
+              sx={{ '& .MuiRating-icon': { fontSize: '0.7rem' } }}
+            />
+          </Box>
+          {/* Product Name */}
+          <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.productName}`}</Typography>
         </Box>
-        {/* Product Name */}
-        <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.productName}`}</Typography>
-        {/* Volume/Unit */}
-        <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '10%', flexShrink: 0, fontSize: '0.7rem' }}>{`${product.volume}${product.unit}`}</Typography>
-        {/* Price */}
-        <Typography component="span" variant="body1" sx={{ width: 'auto', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: product.priceType === '通常' ? 'text.primary' : (product.priceType === '日替り' ? '#B22222' : '#FF8C00') }}>{`${product.priceExcludingTax}円`}</Typography>
-        {product.priceType !== '通常' && (
-          <Typography component="span" variant="caption" sx={{ color: product.priceType === '日替り' ? '#B22222' : '#FF8C00', fontSize: '0.7rem', ml: 0.5 }}>
-            {formatSpecialPriceDate(product.priceType === '日替り' ? product.startDate : product.endDate, product.priceType)}
-          </Typography>
-        )}
-        {/* Unit Price */}
-        <Typography component="span" variant="caption" color="red" sx={{ width: '12%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.7rem' }}>{`${formatUnitPrice(product.volume > 0 ? (product.priceExcludingTax / product.volume) : Infinity, product.unit)}`}</Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline', flexShrink: 0 }}> {/* Group 2: Price + Volume/Unit + Special Price Date + Unit Price */}
+          {/* Price */}
+          <Typography component="span" variant="body1" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: product.priceType === '通常' ? 'text.primary' : (product.priceType === '日替り' ? '#B22222' : '#FF8C00') }}>{`${product.priceExcludingTax}円`}</Typography>
+          {product.priceType !== '通常' && (
+            <Typography component="span" variant="caption" sx={{ color: product.priceType === '日替り' ? '#B22222' : '#FF8C00', ml: 0.5 }}>
+              {formatSpecialPriceDate(product.priceType === '日替り' ? product.startDate : product.endDate, product.priceType)}
+            </Typography>
+          )}
+          {/* Volume/Unit */}
+          <Typography component="span" variant="body1" color="text.secondary" sx={{ ml: 1 }}>{`${product.volume}${product.unit === '入り' ? '入' : product.unit}`}</Typography>
+          {/* Unit Price */}
+          <Typography component="span" variant="body1" color="red" sx={{
+            whiteSpace: 'normal',
+            overflow: 'visible',
+            textOverflow: 'clip',
+            ml: 1
+          }}>{`${formatUnitPrice(product.volume > 0 ? (product.priceExcludingTax / product.volume) : Infinity, product.unit)}`}</Typography>
+        </Box>
       </Box>
 
       {/* Line 2: Manufacturer, Store Name, Other Button, Hidden Button */}
@@ -49,7 +58,7 @@ const ProductListItem = ({ product, userRatingsByProductName, formatUnitPrice, f
         <Typography component="span" variant="caption" color="text.secondary" sx={{ width: '20%', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.manufacturer}`}</Typography>
         {/* Store Name */}
         <Typography component="span" variant="caption" color="text.secondary" sx={{
-          flexGrow: 1,
+          flexGrow: 1, // flexGrow を 1 に戻す
           flexShrink: 0,
           fontSize: '0.7rem',
           whiteSpace: 'nowrap',
@@ -57,7 +66,7 @@ const ProductListItem = ({ product, userRatingsByProductName, formatUnitPrice, f
           textOverflow: 'ellipsis',
           mr: 1
         }}>{`${product.storeName}`}</Typography>
-        <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', flexShrink: 0 }}>
+        <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', flexShrink: 0, ml: 'auto' }}> {/* ml: 'auto' を追加 */}
           {formatRegistrationDate(product.createdAt)}
         </Typography>
         {/* Other Button */}
