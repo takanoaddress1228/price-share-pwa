@@ -53,11 +53,11 @@ const ProductListPage = () => {
   const formatUnitPrice = (price, unit) => {
     if (price === Infinity) return '-';
     if (price >= 100) {
-      return `${Math.round(price)}/${unit === '入り' ? '入' : unit}`;
+      return `${Math.round(price)}`;
     } else if (price >= 10) {
-      return `${price.toFixed(1)}/${unit === '入り' ? '入' : unit}`;
+      return `${price.toFixed(1)}`;
     } else {
-      return `${price.toFixed(2)}/${unit === '入り' ? '入' : unit}`;
+      return `${price.toFixed(2)}`;
     }
   };
 

@@ -9,7 +9,7 @@ const ProductListItem = ({ product, userRatingsByProductName, formatUnitPrice, f
   return (
     <Box> {/* Outer Box for two lines */}
       {/* Line 1: Star Rating, Product Name, Price, Volume/Unit, Unit Price */}
-      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 0.5, mb: 0.5, justifyContent: 'space-between' }}> {/* mb for spacing between lines */}
+      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.5, mb: 0.5, justifyContent: 'space-between' }}> {/* mb for spacing between lines */}
         <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 1, minWidth: 0 }}> {/* Group 1: Star Rating + Product Name */}
           {/* Star Rating */}
           <Box
@@ -30,24 +30,24 @@ const ProductListItem = ({ product, userRatingsByProductName, formatUnitPrice, f
             />
           </Box>
           {/* Product Name */}
-          <Typography component="span" variant="body1" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${product.productName}`}</Typography>
+          <Typography component="span" variant="body1" sx={{ flexGrow: 1, maxWidth: '17rem' }}>{`${product.productName}`}</Typography>
         </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline', flexShrink: 0 }}> {/* Group 2: Price + Volume/Unit + Special Price Date + Unit Price */}
-          {/* Price */}
-          <Typography component="span" variant="body1" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: product.priceType === '通常' ? 'text.primary' : (product.priceType === '日替り' ? '#B22222' : '#FF8C00') }}>{`${product.priceExcludingTax}円`}</Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline', flexShrink: 0, ml: 'auto' }}> {/* Group 2: Special Price Date + Price + Volume/Unit + Unit Price */}
           {product.priceType !== '通常' && (
-            <Typography component="span" variant="caption" sx={{ color: product.priceType === '日替り' ? '#B22222' : '#FF8C00', ml: 0.5 }}>
+            <Typography component="span" variant="caption" sx={{ color: product.priceType === '日替り' ? '#B22222' : '#FF8C00', whiteSpace: 'nowrap', flexShrink: 0, mr: 0.5, fontSize: '0.7rem' }}>
               {formatSpecialPriceDate(product.priceType === '日替り' ? product.startDate : product.endDate, product.priceType)}
             </Typography>
           )}
+          {/* Price */}
+          <Typography component="span" variant="body1" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: product.priceType === '通常' ? 'text.primary' : (product.priceType === '日替り' ? '#B22222' : '#FF8C00') }}>{`${product.priceExcludingTax}円`}</Typography>
           {/* Volume/Unit */}
           <Typography component="span" variant="body1" color="text.secondary" sx={{ ml: 1 }}>{`${product.volume}${product.unit === '入り' ? '入' : product.unit}`}</Typography>
           {/* Unit Price */}
+          <Typography component="span" color="red" sx={{ fontSize: '0.7rem', ml: 1 }}>@</Typography> {/* 小さな@ */}
           <Typography component="span" variant="body1" color="red" sx={{
             whiteSpace: 'normal',
             overflow: 'visible',
             textOverflow: 'clip',
-            ml: 1
           }}>{`${formatUnitPrice(product.volume > 0 ? (product.priceExcludingTax / product.volume) : Infinity, product.unit)}`}</Typography>
         </Box>
       </Box>
@@ -59,7 +59,7 @@ const ProductListItem = ({ product, userRatingsByProductName, formatUnitPrice, f
         {/* Store Name */}
         <Typography component="span" variant="caption" color="text.secondary" sx={{
           flexGrow: 1, // flexGrow を 1 に戻す
-          flexShrink: 0,
+          flexShrink: 1, // Changed from 0 to 1
           fontSize: '0.7rem',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
