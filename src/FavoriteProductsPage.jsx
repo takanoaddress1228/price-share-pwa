@@ -16,15 +16,32 @@ import {
   DialogTitle,
   DialogContent,
   IconButton,
+  Autocomplete,
+  InputLabel,
 } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import { toHalfWidthKatakana, toHiragana } from './utils/stringUtils'; // 追加
 import ProductListItem from './components/ProductListItem'; // 追加
+import useCategoryFilter from './hooks/useCategoryFilter'; // 追加
 
 const FavoriteProductsPage = () => {
   const navigate = useNavigate();
+  const {
+    largeCategory,
+    setLargeCategory,
+    mediumCategory,
+    setMediumCategory,
+    smallCategory,
+    setSmallCategory,
+    handleLargeCategoryChange,
+    handleMediumCategoryChange,
+    handleSmallCategoryChange,
+    largeCategories,
+    getMediumCategories,
+        getSmallCategories,
+  } = useCategoryFilter();
 
   const formatRegistrationDate = (timestamp) => {
     if (!timestamp) return '';
@@ -64,7 +81,7 @@ const FavoriteProductsPage = () => {
     const day = date.getDate();
     if (type === '日替り') {
       return `${month}/${day}`;
-    } else if (type === '月間特売') {
+    } else if (type === '期間特売') {
       return `~${month}/${day}`;
     }
     return '';
@@ -158,7 +175,7 @@ const FavoriteProductsPage = () => {
         unsubscribeHiddenProducts();
       }
     };
-  }, [auth.currentUser]);
+  }, [products, searchKeyword, hiddenProductIds, userRatingsByProductName, largeCategory, mediumCategory, smallCategory]);
 
   const handleShowRelatedProducts = (productName, volume) => {
     // 非表示でない商品のみをフィルタリング対象とする
@@ -176,6 +193,24 @@ const FavoriteProductsPage = () => {
   const handleCloseRelatedProductsDialog = () => {
     setOpenRelatedProductsDialog(false);
     setRelatedProducts([]);
+  };
+
+  const handleToggleHiddenStatus = async (productId, isHidden) => {
+    if (!auth.currentUser) {
+      alert('ログインして商品の非表示設定を変更してください。');
+      return;
+    }
+    try {
+      const hiddenRef = doc(db, `users/${auth.currentUser.uid}/hiddenProducts/${productId}`);
+      if (isHidden) {
+        await deleteDoc(hiddenRef); // 非表示を解除
+      } else {
+        await setDoc(hiddenRef, { hidden: true }); // 非表示に設定
+      }
+    } catch (error) {
+      console.error("非表示設定変更エラー:", error);
+      alert("商品の非表示設定の変更に失敗しました。");
+    }
   };
 
   // 商品リストを検索キーワードでフィルタリング
@@ -199,6 +234,17 @@ const FavoriteProductsPage = () => {
     });
     let productsToShow = Array.from(cheapestPerProductNameMap.values());
 
+    // カテゴリーによるフィルタリング
+    if (largeCategory) {
+      productsToShow = productsToShow.filter(product => product.largeCategory === largeCategory);
+    }
+    if (mediumCategory) {
+      productsToShow = productsToShow.filter(product => product.mediumCategory === mediumCategory);
+    }
+    if (smallCategory) {
+      productsToShow = productsToShow.filter(product => product.smallCategory === smallCategory);
+    }
+
     // 検索キーワードと星評価によるフィルタリング
     const keyword = searchKeyword.toLowerCase();
     const searchRating = parseInt(keyword, 10); // キーワードを数値に変換
@@ -207,15 +253,12 @@ const FavoriteProductsPage = () => {
     let tempFilteredProducts = productsToShow.filter(product => {
       const productNameLower = product.productName.toLowerCase();
       const manufacturerLower = product.manufacturer.toLowerCase();
-      // const tagsLower = (product.tags || []).map(tag => tag.toLowerCase()); // タグ関連のコードは削除済み
 
       // ひらがなをカタカナに変換する関数
       const productNameHiragana = toHiragana(productNameLower);
       const productNameKatakana = toHalfWidthKatakana(productNameLower);
       const manufacturerHiragana = toHiragana(manufacturerLower);
       const manufacturerKatakana = toHalfWidthKatakana(manufacturerLower);
-
-      // const tagMatch = tagsLower.some(tag => tag.includes(keyword)); // タグ関連のコードは削除済み
 
       return (
         (isRatingSearch && (userRatingsByProductName[product.productName] || 0) === searchRating) || // 星評価が一致する場合
@@ -226,7 +269,6 @@ const FavoriteProductsPage = () => {
           productNameKatakana.includes(keyword) ||
           manufacturerHiragana.includes(keyword) ||
           manufacturerKatakana.includes(keyword)
-          // || tagMatch // タグ関連のコードは削除済み
         ))
       );
     });
@@ -252,6 +294,64 @@ const FavoriteProductsPage = () => {
           placeholder="商品名または星の数を入力（1-3）"
           sx={{ width: '100%' }}
         />
+        <Autocomplete
+          fullWidth
+          options={largeCategories}
+          getOptionLabel={(option) => option || ''}
+          value={largeCategory || null}
+          onChange={handleLargeCategoryChange}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="大カテゴリー"
+              variant="outlined"
+              size="small"
+              margin="dense"
+              fullWidth
+            />
+          )}
+          sx={{ mt: 1 }}
+        />
+        {largeCategory && (
+          <Autocomplete
+            fullWidth
+            options={getMediumCategories(largeCategory)}
+            getOptionLabel={(option) => option || ''}
+            value={mediumCategory || null}
+            onChange={handleMediumCategoryChange}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="中カテゴリー"
+                variant="outlined"
+                size="small"
+                margin="dense"
+                fullWidth
+              />
+            )}
+            sx={{ mt: 1 }}
+          />
+        )}
+        {mediumCategory && (
+          <Autocomplete
+            fullWidth
+            options={getSmallCategories(largeCategory, mediumCategory)}
+            getOptionLabel={(option) => option || ''}
+            value={smallCategory || null}
+            onChange={handleSmallCategoryChange}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="小カテゴリー"
+                variant="outlined"
+                size="small"
+                margin="dense"
+                fullWidth
+              />
+            )}
+            sx={{ mt: 1 }}
+          />
+        )}
       </Box>
 
       <List>
@@ -271,9 +371,11 @@ const FavoriteProductsPage = () => {
                       formatSpecialPriceDate={formatSpecialPriceDate}
                       handleShowRelatedProducts={handleShowRelatedProducts}
                       navigate={navigate}
+                      handleToggleHiddenStatus={handleToggleHiddenStatus}
                       setCurrentProductForRating={setCurrentProductForRating}
                       setDialogRatingValue={setDialogRatingValue}
                       setOpenRatingDialog={setOpenRatingDialog}
+                      handleToggleHiddenStatus={handleToggleHiddenStatus}
                     />
                   }
                 />

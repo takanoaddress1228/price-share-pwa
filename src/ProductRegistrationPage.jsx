@@ -144,12 +144,6 @@ const ProductRegistrationPage = () => {
         }
       };
       fetchProductForEdit();
-    } else {
-      // 新規登録モード
-      setIsEditMode(false);
-      setProductIdToEdit(null);
-      setProduct(initialProductState);
-      setIsProductSelected(false);
     }
   }, [urlPriceId, navigate]);
 
@@ -255,7 +249,6 @@ const ProductRegistrationPage = () => {
   };
 
   const handleConfirmAction = async () => {
-    // setShowConfirmationDialog(false); // 確認ダイアログを削除するためコメントアウトまたは削除
     try {
       if (isEditMode && productIdToEdit) {
         // === 古い形式のデータを更新する場合 ===
@@ -287,8 +280,9 @@ const ProductRegistrationPage = () => {
 
           // 3. 古い商品(products)を削除
           await deleteDoc(doc(db, "products", productIdToEdit));
-
-          alert('商品を新しい形式に更新しました！');
+          
+          navigate('/price-share-pwa/search', { replace: true }); // 更新後に商品一覧画面へ遷移
+          return; // 処理を終了
 
         } else {
           // === 新しい形式のデータを更新する場合 ===
@@ -311,8 +305,9 @@ const ProductRegistrationPage = () => {
             mediumCategory: product.mediumCategory,
             smallCategory: product.smallCategory,
           });
-
-          alert('商品を更新しました！');
+          
+          navigate('/price-share-pwa/search', { replace: true }); // 更新後に商品一覧画面へ遷移
+          return; // 処理を終了
         }
       } else {
         // === 新規登録処理 ===
@@ -321,7 +316,7 @@ const ProductRegistrationPage = () => {
         // オートコンプリートで商品が選択されている場合
         if (productDefinitionId) {
           const definitionDocRef = doc(db, "product_definitions", productDefinitionId);
-          const definitionDocSnap = await getDoc(definitionDocRef);
+          const definitionDocSnap = await getDoc(definitionDocRef); // Corrected typo: getGoc -> getDoc
 
           if (definitionDocSnap.exists()) {
             const existingDefinition = definitionDocSnap.data();
@@ -378,24 +373,20 @@ const ProductRegistrationPage = () => {
           endDate: product.endDate,     // Dateオブジェクトをそのまま保存
           createdAt: serverTimestamp(),
         });
-
-        alert('商品を登録しました！');
+        handleClearForm(); // 新規登録後にフォームをクリア
+        return; // 処理を終了
+        
       }
-        handleClearForm();
-        navigate('/price-share-pwa/search'); //tryブロックの最後に移動
-      } catch (e) {
-        console.error("エラー:", e);
-        alert('処理に失敗しました。');
-      }
-    };
+    } catch (e) {
+      console.error("エラー:", e);
+      alert('処理に失敗しました。');
+    }
+  };
 
 
     const handleClearForm = () => {
       setProduct(initialProductState);
       setIsProductSelected(false);
-      if (isEditMode) {
-        navigate('/price-share-pwa/register');
-      }
     };
 
     return (

@@ -19,15 +19,32 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
+  Autocomplete,
+  InputLabel,
 } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import ProductListItem from './components/ProductListItem'; // 追加
+import useCategoryFilter from './hooks/useCategoryFilter'; // 追加
 
 const ProductListPage = () => {
   const navigate = useNavigate();
   const location = useLocation(); // useLocation も追加
+  const {
+    largeCategory,
+    setLargeCategory,
+    mediumCategory,
+    setMediumCategory,
+    smallCategory,
+    setSmallCategory,
+    handleLargeCategoryChange,
+    handleMediumCategoryChange,
+    handleSmallCategoryChange,
+    largeCategories,
+    getMediumCategories,
+    getSmallCategories,
+  } = useCategoryFilter();
 
   const formatRegistrationDate = (timestamp) => {
     if (!timestamp) return '';
@@ -248,6 +265,17 @@ const ProductListPage = () => {
       const productNameLower = product.productName.toLowerCase();
       const manufacturerLower = product.manufacturer.toLowerCase();
 
+      // カテゴリーによるフィルタリング
+      if (largeCategory && product.largeCategory !== largeCategory) {
+        return false;
+      }
+      if (mediumCategory && product.mediumCategory !== mediumCategory) {
+        return false;
+      }
+      if (smallCategory && product.smallCategory !== smallCategory) {
+        return false;
+      }
+
       // ひらがな・カタカナ変換を考慮した検索
       const productNameHiragana = toHiragana(productNameLower);
       const productNameKatakana = toHalfWidthKatakana(productNameLower);
@@ -280,7 +308,7 @@ const ProductListPage = () => {
     }
 
     return tempFilteredProducts;
-  }, [products, searchKeyword, hiddenProductIds, showHiddenProductsView, userRatingsByProductName]);
+  }, [products, searchKeyword, hiddenProductIds, showHiddenProductsView, userRatingsByProductName, largeCategory, mediumCategory, smallCategory]);
 
   return (
     <Box sx={{ p: 3, pt: '70px' }}>
@@ -391,6 +419,64 @@ const ProductListPage = () => {
             },
           }}
         />
+        <Autocomplete
+          fullWidth
+          options={largeCategories}
+          getOptionLabel={(option) => option || ''}
+          value={largeCategory || null}
+          onChange={handleLargeCategoryChange}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="大カテゴリー"
+              variant="outlined"
+              size="small"
+              margin="dense"
+              fullWidth
+            />
+          )}
+          sx={{ mt: 1 }}
+        />
+        {largeCategory && (
+          <Autocomplete
+            fullWidth
+            options={getMediumCategories(largeCategory)}
+            getOptionLabel={(option) => option || ''}
+            value={mediumCategory || null}
+            onChange={handleMediumCategoryChange}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="中カテゴリー"
+                variant="outlined"
+                size="small"
+                margin="dense"
+                fullWidth
+              />
+            )}
+            sx={{ mt: 1 }}
+          />
+        )}
+        {mediumCategory && (
+          <Autocomplete
+            fullWidth
+            options={getSmallCategories(largeCategory, mediumCategory)}
+            getOptionLabel={(option) => option.name || option}
+            value={smallCategory || null}
+            onChange={handleSmallCategoryChange}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="小カテゴリー"
+                variant="outlined"
+                size="small"
+                margin="dense"
+                fullWidth
+              />
+            )}
+            sx={{ mt: 1 }}
+          />
+        )}
       </Box>
       </Box>
 
