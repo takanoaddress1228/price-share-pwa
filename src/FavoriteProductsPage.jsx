@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { auth, db } from './firebase';
 import { collection, query, orderBy, onSnapshot, doc, setDoc, where, getDoc } from 'firebase/firestore'; // getDocを追加
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +25,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { toHalfWidthKatakana, toHiragana, applyProductFilters } from './utils/filterUtils';
 import ProductListItem from './components/ProductListItem'; // 追加
 import useCategoryFilter from './hooks/useCategoryFilter'; // 追加
+import useProductsData from './hooks/useProductsData';
 
 
 const FavoriteProductsPage = () => {
@@ -52,6 +53,10 @@ const FavoriteProductsPage = () => {
   const [openRatingDialog, setOpenRatingDialog] = useState(false); // 評価ダイアログの開閉
   const [currentProductForRating, setCurrentProductForRating] = useState(null); // 評価対象の商品
   const [dialogRatingValue, setDialogRatingValue] = useState(0); // 評価ダイアログの評価値
+
+  
+
+  const { products, userRatingsByProductName, hiddenProductIds, setHiddenProductIds, isLoading } = useProductsData();
 
   const handleShowRelatedProducts = (productName, volume) => {
     // 非表示でない商品のみをフィルタリング対象とする
@@ -84,12 +89,14 @@ const FavoriteProductsPage = () => {
         await setDoc(hiddenRef, { hidden: true }); // 非表示に設定
       }
     } catch (error) {
-      console.error("非表示設定変更エラー:", error);
+      console.error("非表示設定エラー:", error);
       alert("商品の非表示設定の変更に失敗しました。");
     }
   };
 
-  // 商品リストを検索キーワードでフィルタリング
+  
+
+  
   const filteredProducts = useMemo(() => {
     return applyProductFilters(
       products,
