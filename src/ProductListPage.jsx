@@ -27,6 +27,10 @@ import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import ProductListItem from './components/ProductListItem'; // 追加
 import useCategoryFilter from './hooks/useCategoryFilter'; // 追加
+import { applyProductFilters } from './utils/filterUtils';
+import useProductsData from './hooks/useProductsData'; // 追加
+import { formatRegistrationDate, formatUnitPrice, formatSpecialPriceDate } from './utils/formatters';
+
 
 const ProductListPage = () => {
   const navigate = useNavigate();
@@ -46,55 +50,9 @@ const ProductListPage = () => {
     getSmallCategories,
   } = useCategoryFilter();
 
-  const formatRegistrationDate = (timestamp) => {
-    if (!timestamp) return '';
 
-    const registeredDate = timestamp.toDate(); // Firestore TimestampをDateオブジェクトに変換
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - registeredDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays <= 7) {
-      return `${diffDays}日前`;
-    } else if (diffDays <= 30) {
-      const weeks = Math.floor(diffDays / 7);
-      return `${weeks}週前`;
-    } else if (diffDays <= 180) { // 約6ヶ月
-      const months = Math.floor(diffDays / 30);
-      return `${months}ヶ月前`;
-    } else {
-      return '半年前';
-    }
-  };
-
-  const formatUnitPrice = (price, unit) => {
-    if (price === Infinity) return '-';
-    if (price >= 100) {
-      return `${Math.round(price)}`;
-    } else if (price >= 10) {
-      return `${price.toFixed(1)}`;
-    } else {
-      return `${price.toFixed(2)}`;
-    }
-  };
-
-  const formatSpecialPriceDate = (timestamp, type) => {
-    if (!timestamp) return '';
-    const date = timestamp.toDate();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    if (type === '日替り') {
-      return `${month}/${day}`;
-    } else if (type === '期間特売') {
-      return `~${month}/${day}`;
-    }
-    return '';
-  };
-
-  const [products, setProducts] = useState([]);
-  const [userRatingsByProductName, setUserRatingsByProductName] = useState({});
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [hiddenProductIds, setHiddenProductIds] = useState([]);
   const [showHiddenProductsView, setShowHiddenProductsView] = useState(false);
   const [openRelatedProductsDialog, setOpenRelatedProductsDialog] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -102,105 +60,7 @@ const ProductListPage = () => {
   const [currentProductForRating, setCurrentProductForRating] = useState(null);
   const [dialogRatingValue, setDialogRatingValue] = useState(0);
 
-  // ひらがなをカタカナに変換する関数
-  const toHalfWidthKatakana = (str) => {
-    return str.replace(/./g, (char) => {
-      const code = char.charCodeAt(0);
-      if (code >= 0x3041 && code <= 0x3093) { // ひらがな
-        return String.fromCharCode(code + 0x60);
-      }
-      return char;
-    });
-  };
-
-  // カタカナをひらがなに変換する関数
-  const toHiragana = (str) => {
-    return str.replace(/./g, (char) => {
-      const code = char.charCodeAt(0);
-      if (code >= 0x30a1 && code <= 0x30f6) { // カタカナ
-        return String.fromCharCode(code - 0x60);
-      }
-      return char;
-    });
-  };
-
-  // 商品データをリアルタイムで取得
-  useEffect(() => {
-    const q = query(collection(db, "prices"), orderBy("createdAt", "desc")); // pricesコレクションから取得
-    const unsubscribePrices = onSnapshot(q, async (snapshot) => {
-      const pricesData = [];
-      const productDefinitionIds = new Set();
-
-      snapshot.docs.forEach(docSnap => {
-        const price = { id: docSnap.id, ...docSnap.data() };
-        pricesData.push(price);
-        if (price.productDefinitionId) {
-          productDefinitionIds.add(price.productDefinitionId);
-        }
-      });
-
-      const productDefinitionsMap = new Map();
-      if (productDefinitionIds.size > 0) {
-        // product_definitionsをバッチで取得
-        const definitionQueries = Array.from(productDefinitionIds).map(id => getDoc(doc(db, "product_definitions", id)));
-        const definitionSnapshots = await Promise.all(definitionQueries);
-        definitionSnapshots.forEach(docSnap => {
-          if (docSnap.exists()) {
-            productDefinitionsMap.set(docSnap.id, docSnap.data());
-          }
-        });
-      }
-
-      const combinedProducts = pricesData.map(price => {
-        const definition = productDefinitionsMap.get(price.productDefinitionId);
-        return {
-          ...price,
-          productName: definition?.productName || price.productName || '',
-          manufacturer: definition?.manufacturer || price.manufacturer || '',
-          volume: definition?.volume || price.volume || '',
-          unit: definition?.unit || price.unit || 'g',
-          largeCategory: definition?.largeCategory || price.largeCategory || '',
-          mediumCategory: definition?.mediumCategory || price.mediumCategory || '',
-          smallCategory: definition?.smallCategory || price.smallCategory || '',
-        };
-      });
-      setProducts(combinedProducts);
-    });
-
-    // ユーザーごとの商品名評価をリアルタイムで取得
-    let unsubscribeProductNameRatings;
-    if (auth.currentUser) {
-      const ratingsRef = collection(db, `users/${auth.currentUser.uid}/productNameRatings`);
-      unsubscribeProductNameRatings = onSnapshot(ratingsRef, (snapshot) => {
-        const ratingsData = {};
-        snapshot.docs.forEach(doc => {
-          ratingsData[doc.id] = doc.data().rating;
-        });
-        setUserRatingsByProductName(ratingsData);
-      });
-    }
-
-    // 非表示商品のIDをリアルタイムで取得
-    let unsubscribeHiddenProducts;
-    if (auth.currentUser) {
-      const hiddenRef = collection(db, `users/${auth.currentUser.uid}/hiddenProducts`);
-      unsubscribeHiddenProducts = onSnapshot(hiddenRef, (snapshot) => {
-        const hiddenIds = snapshot.docs.map(doc => doc.id);
-        setHiddenProductIds(hiddenIds);
-      });
-    }
-
-    // クリーンアップ関数
-    return () => {
-      unsubscribePrices();
-      if (unsubscribeProductNameRatings) {
-        unsubscribeProductNameRatings();
-      }
-      if (unsubscribeHiddenProducts) {
-        unsubscribeHiddenProducts();
-      }
-    };
-  }, [auth.currentUser]);
+  const { products, userRatingsByProductName, hiddenProductIds, setHiddenProductIds } = useProductsData();
 
   const handleToggleHiddenStatus = async (productId, isHidden) => {
     if (!auth.currentUser) {
@@ -249,65 +109,16 @@ const ProductListPage = () => {
 
   // 商品リストを検索キーワードでフィルタリング
   const filteredProducts = useMemo(() => {
-    let baseProducts = products;
-
-    // 非表示にした商品表示の場合
-    if (showHiddenProductsView) {
-      baseProducts = products.filter(product => hiddenProductIds.includes(product.id));
-    } else {
-      // 通常表示の場合、非表示の商品を除外
-      baseProducts = products.filter(product => !hiddenProductIds.includes(product.id));
-    }
-
-    // 検索キーワードによるフィルタリング
-    const keyword = searchKeyword.toLowerCase();
-    let tempFilteredProducts = baseProducts.filter(product => {
-      const productNameLower = product.productName.toLowerCase();
-      const manufacturerLower = product.manufacturer.toLowerCase();
-
-      // カテゴリーによるフィルタリング
-      if (largeCategory && product.largeCategory !== largeCategory) {
-        return false;
-      }
-      if (mediumCategory && product.mediumCategory !== mediumCategory) {
-        return false;
-      }
-      if (smallCategory && product.smallCategory !== smallCategory) {
-        return false;
-      }
-
-      // ひらがな・カタカナ変換を考慮した検索
-      const productNameHiragana = toHiragana(productNameLower);
-      const productNameKatakana = toHalfWidthKatakana(productNameLower);
-      const manufacturerHiragana = toHiragana(manufacturerLower);
-      const manufacturerKatakana = toHalfWidthKatakana(manufacturerLower);
-
-      return (
-        productNameLower.includes(keyword) ||
-        manufacturerLower.includes(keyword) ||
-        productNameHiragana.includes(keyword) ||
-        productNameKatakana.includes(keyword) ||
-        manufacturerHiragana.includes(keyword) ||
-        manufacturerKatakana.includes(keyword)
-      );
-    });
-
-    // 検索キーワードが入力されている場合に、同じ商品名の中で単価が最も安いものだけを表示する
-    if (searchKeyword.trim() !== '') {
-      const cheapestPerProductNameMap = new Map();
-      tempFilteredProducts.forEach(product => {
-        const unitPrice = product.volume > 0 ? (product.priceExcludingTax / product.volume) : Infinity;
-        const productWithUnitPrice = { ...product, unitPrice };
-
-        const existingCheapest = cheapestPerProductNameMap.get(product.productName);
-        if (!existingCheapest || unitPrice < existingCheapest.unitPrice) {
-          cheapestPerProductNameMap.set(product.productName, productWithUnitPrice);
-        }
-      });
-      return Array.from(cheapestPerProductNameMap.values()).sort((a, b) => a.unitPrice - b.unitPrice);
-    }
-
-    return tempFilteredProducts;
+    return applyProductFilters(
+      products,
+      searchKeyword,
+      hiddenProductIds,
+      showHiddenProductsView,
+      userRatingsByProductName,
+      largeCategory,
+      mediumCategory,
+      smallCategory
+    );
   }, [products, searchKeyword, hiddenProductIds, showHiddenProductsView, userRatingsByProductName, largeCategory, mediumCategory, smallCategory]);
 
   return (
